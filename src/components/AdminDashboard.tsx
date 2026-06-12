@@ -459,6 +459,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                           min="0"
                           value={game[0]}
                           onChange={(e) => handleScoreChange(index, 0, e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           className="form-input"
                           style={{ width: '60px' }}
                           required
@@ -469,6 +470,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                           min="0"
                           value={game[1]}
                           onChange={(e) => handleScoreChange(index, 1, e.target.value)}
+                          onFocus={(e) => e.target.select()}
                           className="form-input"
                           style={{ width: '60px' }}
                           required

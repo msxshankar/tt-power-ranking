@@ -314,6 +314,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
                     min="0"
                     value={game[0]}
                     onChange={(e) => handleScoreChange(index, 0, e.target.value)}
+                    onFocus={(e) => e.target.select()}
                     className="form-input"
                     style={{ width: '48px', padding: '6px', fontSize: '14px' }}
                     required
@@ -324,6 +325,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
                     min="0"
                     value={game[1]}
                     onChange={(e) => handleScoreChange(index, 1, e.target.value)}
+                    onFocus={(e) => e.target.select()}
                     className="form-input"
                     style={{ width: '48px', padding: '6px', fontSize: '14px' }}
                     required
