@@ -30,7 +30,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
 
   // Editing Match state (opens edit score modal)
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
-  const [editedGames, setEditedGames] = useState<[number, number][]>([]);
+  const [editedGames, setEditedGames] = useState<(number | '')[][]>([]);
   const [matchActionError, setMatchActionError] = useState('');
   const [isSavingMatch, setIsSavingMatch] = useState(false);
 
@@ -113,15 +113,16 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
 
   // Handle Score Change in Edit Modal
   const handleScoreChange = (gameIndex: number, playerIndex: 0 | 1, value: string) => {
-    const numericValue = parseInt(value) || 0;
+    const numericValue = value === '' ? '' : parseInt(value);
+    const safeValue = typeof numericValue === 'number' && isNaN(numericValue) ? '' : numericValue;
     const newGames = [...editedGames];
     newGames[gameIndex] = [...newGames[gameIndex]];
-    newGames[gameIndex][playerIndex] = numericValue;
+    newGames[gameIndex][playerIndex] = safeValue;
     setEditedGames(newGames);
   };
 
   const addGameRow = () => {
-    setEditedGames([...editedGames, [0, 0]]);
+    setEditedGames([...editedGames, ['', '']]);
   };
 
   const removeGameRow = (index: number) => {
@@ -140,11 +141,15 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     let p2Wins = 0;
     for (let i = 0; i < editedGames.length; i++) {
       const [s1, s2] = editedGames[i];
-      if (!isValidGameScore(s1, s2, editingMatch.match_type)) {
+      if (s1 === '' || s2 === '') {
+        setMatchActionError(`Please enter both scores for Game ${i + 1}.`);
+        return;
+      }
+      if (!isValidGameScore(s1 as number, s2 as number, editingMatch.match_type)) {
         setMatchActionError(`Game ${i + 1} has an invalid score (${s1}-${s2}) for games to ${editingMatch.match_type}. Remember, players must win by 2 clear points.`);
         return;
       }
-      if (s1 > s2) p1Wins++;
+      if ((s1 as number) > (s2 as number)) p1Wins++;
       else p2Wins++;
     }
 
@@ -154,7 +159,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     }
 
     setIsSavingMatch(true);
-    const result = await updateMatchScoreAction(editingMatch.id, editedGames);
+    const result = await updateMatchScoreAction(editingMatch.id, editedGames as [number, number][]);
     setIsSavingMatch(false);
 
     if (result.success) {

@@ -16,10 +16,10 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
   const [player1Id, setPlayer1Id] = useState('');
   const [player2Id, setPlayer2Id] = useState('');
   const [matchType, setMatchType] = useState<'11' | '21'>('11');
-  const [games, setGames] = useState<[number, number][]>([
-    [0, 0],
-    [0, 0],
-    [0, 0],
+  const [games, setGames] = useState<(number | '')[][]>([
+    ['', ''],
+    ['', ''],
+    ['', ''],
   ]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -38,16 +38,17 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
 
   // Handle score change
   const handleScoreChange = (gameIndex: number, playerIndex: 0 | 1, value: string) => {
-    const numericValue = parseInt(value) || 0;
+    const numericValue = value === '' ? '' : parseInt(value);
+    const safeValue = typeof numericValue === 'number' && isNaN(numericValue) ? '' : numericValue;
     const newGames = [...games];
     newGames[gameIndex] = [...newGames[gameIndex]];
-    newGames[gameIndex][playerIndex] = numericValue;
+    newGames[gameIndex][playerIndex] = safeValue;
     setGames(newGames);
   };
 
   // Add a new game row
   const addGameRow = () => {
-    setGames([...games, [0, 0]]);
+    setGames([...games, ['', '']]);
   };
 
   // Remove a game row
@@ -108,11 +109,15 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
     let player2Wins = 0;
     for (let i = 0; i < games.length; i++) {
       const [s1, s2] = games[i];
-      if (!isValidGameScore(s1, s2, matchType)) {
+      if (s1 === '' || s2 === '') {
+        setError(`Please enter both scores for Game ${i + 1}.`);
+        return;
+      }
+      if (!isValidGameScore(s1 as number, s2 as number, matchType)) {
         setError(`Game ${i + 1} has an invalid score (${s1}-${s2}) for games to ${matchType}. Remember, players must win by 2 clear points.`);
         return;
       }
-      if (s1 > s2) player1Wins++;
+      if ((s1 as number) > (s2 as number)) player1Wins++;
       else player2Wins++;
     }
 
@@ -122,7 +127,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
     }
 
     setIsSubmitting(true);
-    const result = await addMatchAction(player1Id, player2Id, matchType, games);
+    const result = await addMatchAction(player1Id, player2Id, matchType, games as [number, number][]);
     setIsSubmitting(false);
 
     if (result.success) {
@@ -131,9 +136,9 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
       setPlayer1Id('');
       setPlayer2Id('');
       setGames([
-        [0, 0],
-        [0, 0],
-        [0, 0],
+        ['', ''],
+        ['', ''],
+        ['', ''],
       ]);
       router.refresh();
       // Clear success message after 3 seconds
