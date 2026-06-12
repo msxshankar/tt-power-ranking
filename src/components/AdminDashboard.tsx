@@ -50,6 +50,8 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   const [playerActionError, setPlayerActionError] = useState('');
   const [isDeletingPlayerId, setIsDeletingPlayerId] = useState<string | null>(null);
   const [isSavingPlayerName, setIsSavingPlayerName] = useState(false);
+  const [confirmingDeletePlayer, setConfirmingDeletePlayer] = useState<{ id: string; name: string } | null>(null);
+  const [confirmingDeleteMatch, setConfirmingDeleteMatch] = useState<number | null>(null);
 
   // Editing Match state (opens edit score modal)
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
@@ -84,11 +86,9 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     setPassword('');
   };
 
-  // Handle Delete Player
-  const handleDeletePlayer = async (id: string, name: string) => {
-    if (isDeletingPlayerId || isSavingPlayerName) return;
-    if (!confirm(`Are you sure you want to delete player "${name}"? This will also delete all matches they played in!`)) return;
-
+  // Handle Delete Player - called after confirmation
+  const executeDeletePlayer = async (id: string) => {
+    setConfirmingDeletePlayer(null);
     setPlayerActionError('');
     setIsDeletingPlayerId(id);
     try {
@@ -145,10 +145,11 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     }
   };
 
-  // Handle Delete Match
-  const handleDeleteMatch = async (id: number) => {
-    if (confirm(`Are you sure you want to delete match #${id}? Elo ratings will be recalculated automatically.`)) {
-      setMatchActionError('');
+  // Handle Delete Match - called after confirmation
+  const executeDeleteMatch = async (id: number) => {
+    setConfirmingDeleteMatch(null);
+    setMatchActionError('');
+    try {
       const result = await deleteMatchAction(id);
       if (result.success) {
         setLocalMatches(prev => prev.filter(m => m.id !== id));
@@ -156,6 +157,8 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
       } else {
         setMatchActionError(result.error || 'Failed to delete match.');
       }
+    } catch (err: any) {
+      setMatchActionError(err?.message || 'An unexpected error occurred while deleting match.');
     }
   };
 
@@ -379,7 +382,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                             ✏️ Edit
                           </button>
                           <button
-                            onClick={() => handleDeleteMatch(match.id)}
+                            onClick={() => setConfirmingDeleteMatch(match.id)}
                             className="btn btn-sm btn-danger"
                             style={{ padding: '6px 12px' }}
                           >
@@ -489,7 +492,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                                 ✏️ Rename
                               </button>
                               <button
-                                onClick={() => handleDeletePlayer(player.id, player.name)}
+                                onClick={() => setConfirmingDeletePlayer({ id: player.id, name: player.name })}
                                 className="btn btn-sm btn-danger"
                                 style={{ padding: '6px 12px' }}
                                 disabled={isBusy}
@@ -508,6 +511,65 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
           )}
         </section>
       </div>
+
+      {/* Confirm Delete Player Modal */}
+      {confirmingDeletePlayer && (
+        <div className="modal-backdrop">
+          <div className="modal-content glass-panel" style={{ maxWidth: '420px' }}>
+            <h2 className="modal-title">Delete Player</h2>
+            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: 1.5 }}>
+              Are you sure you want to delete <strong style={{ color: 'var(--text-primary)' }}>{confirmingDeletePlayer.name}</strong>?
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--tag-loss-text)', marginBottom: '24px', fontWeight: 600 }}>
+              ⚠️ This will also delete all matches they played in.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setConfirmingDeletePlayer(null)}
+                className="btn"
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => executeDeletePlayer(confirmingDeletePlayer.id)}
+                className="btn btn-danger"
+                style={{ flex: 1 }}
+              >
+                🗑️ Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Delete Match Modal */}
+      {confirmingDeleteMatch !== null && (
+        <div className="modal-backdrop">
+          <div className="modal-content glass-panel" style={{ maxWidth: '420px' }}>
+            <h2 className="modal-title">Delete Match</h2>
+            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.5 }}>
+              Are you sure you want to delete match <strong style={{ color: 'var(--text-primary)' }}>#{confirmingDeleteMatch}</strong>? Elo ratings will be recalculated.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setConfirmingDeleteMatch(null)}
+                className="btn"
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => executeDeleteMatch(confirmingDeleteMatch)}
+                className="btn btn-danger"
+                style={{ flex: 1 }}
+              >
+                🗑️ Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Match Score Modal */}
       {editingMatch && (
