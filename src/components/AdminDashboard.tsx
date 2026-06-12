@@ -33,6 +33,17 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  const [localPlayers, setLocalPlayers] = useState<Player[]>(players);
+  const [localMatches, setLocalMatches] = useState<Match[]>(matches);
+
+  useEffect(() => {
+    setLocalPlayers(players);
+  }, [players]);
+
+  useEffect(() => {
+    setLocalMatches(matches);
+  }, [matches]);
+
   // Editing Player state
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
   const [editingPlayerName, setEditingPlayerName] = useState('');
@@ -74,8 +85,11 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   // Handle Delete Player
   const handleDeletePlayer = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete player "${name}"? This will also delete all matches they played in!`)) {
+      setPlayerActionError('');
       const result = await deletePlayerAction(id);
       if (result.success) {
+        setLocalPlayers(prev => prev.filter(p => p.id !== id));
+        setLocalMatches(prev => prev.filter(m => m.player1_id !== id && m.player2_id !== id));
         router.refresh();
       } else {
         setPlayerActionError(result.error || 'Failed to delete player.');
@@ -95,6 +109,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
 
     const result = await renamePlayerAction(id, cleanName);
     if (result.success) {
+      setLocalPlayers(prev => prev.map(p => p.id === id ? { ...p, name: cleanName } : p));
       setEditingPlayerId(null);
       setEditingPlayerName('');
       router.refresh();
@@ -106,8 +121,10 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   // Handle Delete Match
   const handleDeleteMatch = async (id: number) => {
     if (confirm(`Are you sure you want to delete match #${id}? Elo ratings will be recalculated automatically.`)) {
+      setMatchActionError('');
       const result = await deleteMatchAction(id);
       if (result.success) {
+        setLocalMatches(prev => prev.filter(m => m.id !== id));
         router.refresh();
       } else {
         setMatchActionError(result.error || 'Failed to delete match.');
@@ -175,6 +192,12 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     setIsSavingMatch(false);
 
     if (result.success) {
+      setLocalMatches(prev => prev.map(m => m.id === editingMatch.id ? {
+        ...m,
+        game_scores: editedGames as [number, number][],
+        winner_id: p1Wins > p2Wins ? m.player1_id : m.player2_id,
+        created_at: editedDate ? new Date(editedDate).toISOString() : m.created_at
+      } : m));
       setEditingMatch(null);
       router.refresh();
     } else {
@@ -184,7 +207,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
 
   // Get Player Name from ID
   const getPlayerName = (id: string) => {
-    const p = players.find(player => player.id === id);
+    const p = localPlayers.find(player => player.id === id);
     return p ? p.name : 'Deleted Player';
   };
 
@@ -255,7 +278,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
           <div className="admin-header">
             <h2 style={{ fontSize: '20px', fontWeight: 700 }}>Matches Management</h2>
             <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              {matches.length} Total Matches
+              {localMatches.length} Total Matches
             </span>
           </div>
 
@@ -265,7 +288,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
             </div>
           )}
 
-          {matches.length === 0 ? (
+          {localMatches.length === 0 ? (
             <div className="empty-state">No matches recorded in the database.</div>
           ) : (
             <div className="table-wrapper">
@@ -279,7 +302,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                   </tr>
                 </thead>
                 <tbody>
-                  {[...matches].reverse().map((match) => (
+                  {[...localMatches].reverse().map((match) => (
                     <tr key={match.id}>
                       <td style={{ fontWeight: 700 }}>
                         #{match.id}
@@ -350,7 +373,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
           <div className="admin-header">
             <h2 style={{ fontSize: '20px', fontWeight: 700 }}>Players Management</h2>
             <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              {players.length} Total Players
+              {localPlayers.length} Total Players
             </span>
           </div>
 
@@ -360,7 +383,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
             </div>
           )}
 
-          {players.length === 0 ? (
+          {localPlayers.length === 0 ? (
             <div className="empty-state">No players found in the database.</div>
           ) : (
             <div className="table-wrapper">
@@ -372,7 +395,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                   </tr>
                 </thead>
                 <tbody>
-                  {players.map((player) => (
+                  {localPlayers.map((player) => (
                     <tr key={player.id}>
                       <td>
                         {editingPlayerId === player.id ? (

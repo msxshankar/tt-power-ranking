@@ -12,10 +12,15 @@ export async function addPlayerAction(name: string) {
       return { success: false, error: 'Player name cannot be empty.' };
     }
     const player = await db.addPlayer(cleanName);
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (err) {
+      console.warn('Revalidation error in addPlayerAction:', err);
+    }
     return { success: true, player };
   } catch (e: any) {
+    console.error('Error in addPlayerAction:', e);
     return { success: false, error: e.message || 'Failed to add player.' };
   }
 }
@@ -27,10 +32,15 @@ export async function deletePlayerAction(id: string) {
       return { success: false, error: 'Player ID is required.' };
     }
     await db.deletePlayer(id);
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (err) {
+      console.warn('Revalidation error in deletePlayerAction:', err);
+    }
     return { success: true };
   } catch (e: any) {
+    console.error('Error in deletePlayerAction:', e);
     return { success: false, error: e.message || 'Failed to delete player.' };
   }
 }
@@ -43,10 +53,15 @@ export async function renamePlayerAction(id: string, name: string) {
       return { success: false, error: 'Player ID and name are required.' };
     }
     await db.renamePlayer(id, cleanName);
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (err) {
+      console.warn('Revalidation error in renamePlayerAction:', err);
+    }
     return { success: true };
   } catch (e: any) {
+    console.error('Error in renamePlayerAction:', e);
     return { success: false, error: e.message || 'Failed to rename player.' };
   }
 }
@@ -91,10 +106,15 @@ export async function addMatchAction(
       winner_id: winnerId,
     });
 
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (err) {
+      console.warn('Revalidation error in addMatchAction:', err);
+    }
     return { success: true, match };
   } catch (e: any) {
+    console.error('Error in addMatchAction:', e);
     return { success: false, error: e.message || 'Failed to add match.' };
   }
 }
@@ -106,10 +126,15 @@ export async function deleteMatchAction(id: number) {
       return { success: false, error: 'Match ID is required.' };
     }
     await db.deleteMatch(id);
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (err) {
+      console.warn('Revalidation error in deleteMatchAction:', err);
+    }
     return { success: true };
   } catch (e: any) {
+    console.error('Error in deleteMatchAction:', e);
     return { success: false, error: e.message || 'Failed to delete match.' };
   }
 }
@@ -139,10 +164,15 @@ export async function updateMatchScoreAction(id: number, gameScores: [number, nu
 
     await db.updateMatchScore(id, gameScores, winnerId, createdAt);
     
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (err) {
+      console.warn('Revalidation error in updateMatchScoreAction:', err);
+    }
     return { success: true };
   } catch (e: any) {
+    console.error('Error in updateMatchScoreAction:', e);
     return { success: false, error: e.message || 'Failed to update match score.' };
   }
 }
