@@ -271,27 +271,35 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
         {/* Match Type */}
         <div className="form-group" style={{ marginBottom: '16px' }}>
           <label className="form-label">Game Point Rules</label>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer', fontWeight: 600 }}>
-              <input
-                type="radio"
-                name="sectionMatchType"
-                value="11"
-                checked={matchType === '11'}
-                onChange={() => setMatchType('11')}
-              />
-              Games up to 11
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer', fontWeight: 600 }}>
-              <input
-                type="radio"
-                name="sectionMatchType"
-                value="21"
-                checked={matchType === '21'}
-                onChange={() => setMatchType('21')}
-              />
-              Games up to 21
-            </label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              type="button"
+              className={`btn ${matchType === '11' ? 'btn-primary' : ''}`}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                borderRadius: '12px',
+              }}
+              onClick={() => setMatchType('11')}
+            >
+              🏓 Up to 11
+            </button>
+            <button
+              type="button"
+              className={`btn ${matchType === '21' ? 'btn-primary' : ''}`}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                borderRadius: '12px',
+              }}
+              onClick={() => setMatchType('21')}
+            >
+              🏓 Up to 21
+            </button>
           </div>
         </div>
 
