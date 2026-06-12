@@ -4,6 +4,7 @@ import { calculateRankings, formatDate } from '@/lib/elo';
 import AddMatchSection from '@/components/AddMatchSection';
 import PlayersTable from '@/components/PlayersTable';
 import ThemeToggle from '@/components/ThemeToggle';
+import RankingHistoryChart from '@/components/RankingHistoryChart';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ export default async function Home() {
   const matches = await db.getMatches();
 
   // Run ELO ranking calculations
-  const { playerStats, top5, recentMatches } = calculateRankings(players, matches);
+  const { playerStats, top5, recentMatches, eloHistory } = calculateRankings(players, matches);
 
   return (
     <main className="container">
@@ -154,6 +155,11 @@ export default async function Home() {
       {/* Overall Rankings & Stats Table */}
       <section>
         <PlayersTable initialStats={playerStats} />
+      </section>
+
+      {/* ELO Rating Progress Chart */}
+      <section>
+        <RankingHistoryChart eloHistory={eloHistory} playerNames={players.map(p => p.name)} />
       </section>
 
       {/* Footer */}

@@ -86,6 +86,12 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     player1_games: number;
     player2_games: number;
   })[];
+  eloHistory: {
+    label: string;
+    matchId: number;
+    date: string;
+    ratings: Record<string, number>;
+  }[];
 } {
   // Initialize statistics for all players
   const statsMap: Record<string, PlayerStats> = {};
@@ -105,6 +111,25 @@ export function calculateRankings(players: Player[], matches: Match[]): {
 
   // Process all matches in chronological order (sorted by id)
   const sortedMatches = [...matches].sort((a, b) => a.id - b.id);
+
+  const eloHistory: {
+    label: string;
+    matchId: number;
+    date: string;
+    ratings: Record<string, number>;
+  }[] = [];
+
+  // Add starting point
+  const startSnapshot: Record<string, number> = {};
+  for (const player of players) {
+    startSnapshot[player.name] = 1200;
+  }
+  eloHistory.push({
+    label: 'Start',
+    matchId: 0,
+    date: 'Initial',
+    ratings: startSnapshot,
+  });
 
   for (const match of sortedMatches) {
     const p1 = statsMap[match.player1_id];
@@ -158,6 +183,18 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     p1.totalLosses = p1.losses11 + p1.losses21;
     p2.totalWins = p2.wins11 + p2.wins21;
     p2.totalLosses = p2.losses11 + p2.losses21;
+
+    // Record ELO snapshot for history
+    const snapshot: Record<string, number> = {};
+    for (const player of players) {
+      snapshot[player.name] = statsMap[player.id]?.elo ?? 1200;
+    }
+    eloHistory.push({
+      label: `Match #${match.id}`,
+      matchId: match.id,
+      date: formatDate(match.created_at),
+      ratings: snapshot,
+    });
   }
 
   // Convert stats map to array
@@ -197,6 +234,7 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     playerStats: sortedPlayers,
     top5,
     recentMatches,
+    eloHistory,
   };
 }
 
