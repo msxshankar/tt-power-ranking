@@ -199,3 +199,16 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     recentMatches,
   };
 }
+
+export function formatDate(isoString: string): string {
+  if (!isoString) return 'Unknown Date';
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return 'Unknown Date';
+  
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  
+  return `${month} ${day}, ${year}`;
+}

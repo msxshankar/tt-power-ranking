@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
-import { calculateRankings } from '@/lib/elo';
+import { calculateRankings, formatDate } from '@/lib/elo';
 import AddMatchSection from '@/components/AddMatchSection';
 import PlayersTable from '@/components/PlayersTable';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -114,7 +114,7 @@ export default async function Home() {
                 {recentMatches.map((match) => (
                   <div key={match.id} className="match-item">
                     <div className="match-header">
-                      <span>Match #{match.id}</span>
+                      <span>Match #{match.id} &bull; {formatDate(match.created_at)}</span>
                       <span style={{
                         background: 'var(--input-bg)',
                         padding: '2px 8px',

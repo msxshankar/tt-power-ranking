@@ -10,7 +10,7 @@ import {
   deleteMatchAction,
   updateMatchScoreAction
 } from '@/lib/actions';
-import { isValidGameScore } from '@/lib/elo';
+import { isValidGameScore, formatDate } from '@/lib/elo';
 
 interface AdminDashboardProps {
   players: Player[];
@@ -269,7 +269,12 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                 <tbody>
                   {[...matches].reverse().map((match) => (
                     <tr key={match.id}>
-                      <td style={{ fontWeight: 700 }}>#{match.id}</td>
+                      <td style={{ fontWeight: 700 }}>
+                        #{match.id}
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500, marginTop: '4px' }}>
+                          {formatDate(match.created_at)}
+                        </div>
+                      </td>
                       <td>
                         <div style={{ fontWeight: 600 }}>
                           <span style={match.winner_id === match.player1_id ? { color: 'var(--accent-color)' } : {}}>
