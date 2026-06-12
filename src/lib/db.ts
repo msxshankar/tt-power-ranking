@@ -191,7 +191,9 @@ class NeonDatabase implements Database {
 
   async deletePlayer(id: string): Promise<void> {
     await this.ensureTables();
-    // Foreign keys on delete cascade will delete matches
+    // Explicitly delete associated matches first, in case ON DELETE CASCADE
+    // isn't active (e.g. table was created before the constraint was added)
+    await this.sql`DELETE FROM matches WHERE player1_id = ${id} OR player2_id = ${id}`;
     await this.sql`DELETE FROM players WHERE id = ${id}`;
   }
 

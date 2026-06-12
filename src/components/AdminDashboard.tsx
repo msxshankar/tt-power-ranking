@@ -48,6 +48,8 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
   const [editingPlayerName, setEditingPlayerName] = useState('');
   const [playerActionError, setPlayerActionError] = useState('');
+  const [isDeletingPlayerId, setIsDeletingPlayerId] = useState<string | null>(null);
+  const [isSavingPlayerName, setIsSavingPlayerName] = useState(false);
 
   // Editing Match state (opens edit score modal)
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
@@ -84,8 +86,12 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
 
   // Handle Delete Player
   const handleDeletePlayer = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete player "${name}"? This will also delete all matches they played in!`)) {
-      setPlayerActionError('');
+    if (isDeletingPlayerId || isSavingPlayerName) return;
+    if (!confirm(`Are you sure you want to delete player "${name}"? This will also delete all matches they played in!`)) return;
+
+    setPlayerActionError('');
+    setIsDeletingPlayerId(id);
+    try {
       const result = await deletePlayerAction(id);
       if (result.success) {
         setLocalPlayers(prev => prev.filter(p => p.id !== id));
@@ -94,12 +100,17 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
       } else {
         setPlayerActionError(result.error || 'Failed to delete player.');
       }
+    } catch (err: any) {
+      setPlayerActionError(err?.message || 'An unexpected error occurred while deleting.');
+    } finally {
+      setIsDeletingPlayerId(null);
     }
   };
 
   // Handle Rename Player
   const handleRenamePlayerSubmit = async (e: React.FormEvent, id: string) => {
     e.preventDefault();
+    if (isSavingPlayerName || isDeletingPlayerId) return;
     setPlayerActionError('');
     const cleanName = editingPlayerName.trim();
     if (!cleanName) {
@@ -107,14 +118,30 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
       return;
     }
 
-    const result = await renamePlayerAction(id, cleanName);
-    if (result.success) {
-      setLocalPlayers(prev => prev.map(p => p.id === id ? { ...p, name: cleanName } : p));
+    setIsSavingPlayerName(true);
+    try {
+      const result = await renamePlayerAction(id, cleanName);
+      if (result.success) {
+        setLocalPlayers(prev => prev.map(p => p.id === id ? { ...p, name: cleanName } : p));
+        setEditingPlayerId(null);
+        setEditingPlayerName('');
+        router.refresh();
+      } else {
+        setPlayerActionError(result.error || 'Failed to rename player.');
+      }
+    } catch (err: any) {
+      setPlayerActionError(err?.message || 'An unexpected error occurred while renaming.');
+    } finally {
+      setIsSavingPlayerName(false);
+    }
+  };
+
+  // Cancel rename on Escape key
+  const handleRenameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
       setEditingPlayerId(null);
       setEditingPlayerName('');
-      router.refresh();
-    } else {
-      setPlayerActionError(result.error || 'Failed to rename player.');
+      setPlayerActionError('');
     }
   };
 
@@ -395,66 +422,86 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                   </tr>
                 </thead>
                 <tbody>
-                  {localPlayers.map((player) => (
-                    <tr key={player.id}>
-                      <td>
-                        {editingPlayerId === player.id ? (
-                          <form
-                            onSubmit={(e) => handleRenamePlayerSubmit(e, player.id)}
-                            style={{ display: 'flex', gap: '8px' }}
-                          >
-                            <input
-                              type="text"
-                              value={editingPlayerName}
-                              onChange={(e) => setEditingPlayerName(e.target.value)}
-                              className="form-input"
-                              style={{ padding: '6px 12px', fontSize: '14px' }}
-                              autoFocus
-                              required
-                            />
-                            <button type="submit" className="btn btn-sm btn-primary">
-                              Save
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingPlayerId(null);
-                                setEditingPlayerName('');
-                              }}
-                              className="btn btn-sm"
+                  {localPlayers.map((player) => {
+                    const isEditing = editingPlayerId === player.id;
+                    const isDeleting = isDeletingPlayerId === player.id;
+                    const isBusy = isDeletingPlayerId !== null || isSavingPlayerName;
+
+                    return (
+                      <tr key={player.id} style={isDeleting ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
+                        <td colSpan={isEditing ? 2 : undefined}>
+                          {isEditing ? (
+                            <form
+                              onSubmit={(e) => handleRenamePlayerSubmit(e, player.id)}
+                              style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}
                             >
-                              Cancel
-                            </button>
-                          </form>
-                        ) : (
-                          <div style={{ fontWeight: 600 }}>{player.name}</div>
+                              <input
+                                type="text"
+                                value={editingPlayerName}
+                                onChange={(e) => setEditingPlayerName(e.target.value)}
+                                onKeyDown={handleRenameKeyDown}
+                                className="form-input"
+                                style={{ padding: '6px 12px', fontSize: '14px', flex: '1 1 120px', minWidth: '120px' }}
+                                autoFocus
+                                required
+                                disabled={isSavingPlayerName}
+                                placeholder="Enter new name..."
+                              />
+                              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                                <button
+                                  type="submit"
+                                  className="btn btn-sm btn-primary"
+                                  disabled={isSavingPlayerName}
+                                >
+                                  {isSavingPlayerName ? 'Saving...' : 'Save'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingPlayerId(null);
+                                    setEditingPlayerName('');
+                                    setPlayerActionError('');
+                                  }}
+                                  className="btn btn-sm"
+                                  disabled={isSavingPlayerName}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </form>
+                          ) : (
+                            <div style={{ fontWeight: 600 }}>{player.name}</div>
+                          )}
+                        </td>
+                        {!isEditing && (
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '8px' }}>
+                              <button
+                                onClick={() => {
+                                  setEditingPlayerId(player.id);
+                                  setEditingPlayerName(player.name);
+                                  setPlayerActionError('');
+                                }}
+                                className="btn btn-sm"
+                                style={{ padding: '6px 12px' }}
+                                disabled={isBusy}
+                              >
+                                ✏️ Rename
+                              </button>
+                              <button
+                                onClick={() => handleDeletePlayer(player.id, player.name)}
+                                className="btn btn-sm btn-danger"
+                                style={{ padding: '6px 12px' }}
+                                disabled={isBusy}
+                              >
+                                {isDeleting ? '⏳ Deleting...' : '🗑️ Delete'}
+                              </button>
+                            </div>
+                          </td>
                         )}
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        {editingPlayerId !== player.id && (
-                          <div style={{ display: 'inline-flex', gap: '8px' }}>
-                            <button
-                              onClick={() => {
-                                setEditingPlayerId(player.id);
-                                setEditingPlayerName(player.name);
-                              }}
-                              className="btn btn-sm"
-                              style={{ padding: '6px 12px' }}
-                            >
-                              ✏️ Rename
-                            </button>
-                            <button
-                              onClick={() => handleDeletePlayer(player.id, player.name)}
-                              className="btn btn-sm btn-danger"
-                              style={{ padding: '6px 12px' }}
-                            >
-                              🗑️ Delete
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
