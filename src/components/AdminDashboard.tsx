@@ -12,6 +12,16 @@ import {
 } from '@/lib/actions';
 import { isValidGameScore, formatDate } from '@/lib/elo';
 
+function formatDateForInput(isoString: string): string {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 interface AdminDashboardProps {
   players: Player[];
   matches: Match[];
@@ -31,6 +41,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   // Editing Match state (opens edit score modal)
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [editedGames, setEditedGames] = useState<(number | '')[][]>([]);
+  const [editedDate, setEditedDate] = useState('');
   const [matchActionError, setMatchActionError] = useState('');
   const [isSavingMatch, setIsSavingMatch] = useState(false);
 
@@ -108,6 +119,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   const openEditMatchModal = (match: Match) => {
     setEditingMatch(match);
     setEditedGames(match.game_scores);
+    setEditedDate(formatDateForInput(match.created_at));
     setMatchActionError('');
   };
 
@@ -159,7 +171,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     }
 
     setIsSavingMatch(true);
-    const result = await updateMatchScoreAction(editingMatch.id, editedGames as [number, number][]);
+    const result = await updateMatchScoreAction(editingMatch.id, editedGames as [number, number][], editedDate);
     setIsSavingMatch(false);
 
     if (result.success) {
@@ -445,6 +457,18 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                   ⚠️ {matchActionError}
                 </div>
               )}
+
+              {/* Match Date Picker */}
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label className="form-label">Match Date</label>
+                <input
+                  type="date"
+                  value={editedDate}
+                  onChange={(e) => setEditedDate(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
 
               <div style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>

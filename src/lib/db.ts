@@ -12,7 +12,7 @@ export interface Database {
   renamePlayer(id: string, name: string): Promise<void>;
   addMatch(match: Omit<Match, 'id' | 'created_at'>): Promise<Match>;
   deleteMatch(id: number): Promise<void>;
-  updateMatchScore(id: number, gameScores: [number, number][], winnerId: string): Promise<void>;
+  updateMatchScore(id: number, gameScores: [number, number][], winnerId: string, createdAt?: string): Promise<void>;
 }
 
 // JSON file implementation for local development
@@ -101,12 +101,15 @@ class JsonDatabase implements Database {
     this.writeData(data);
   }
 
-  async updateMatchScore(id: number, gameScores: [number, number][], winnerId: string): Promise<void> {
+  async updateMatchScore(id: number, gameScores: [number, number][], winnerId: string, createdAt?: string): Promise<void> {
     const data = this.readData();
     const match = data.matches.find(m => m.id === id);
     if (!match) throw new Error('Match not found');
     match.game_scores = gameScores;
     match.winner_id = winnerId;
+    if (createdAt) {
+      match.created_at = new Date(createdAt).toISOString();
+    }
     this.writeData(data);
   }
 }
@@ -224,14 +227,23 @@ class NeonDatabase implements Database {
     await this.sql`DELETE FROM matches WHERE id = ${id}`;
   }
 
-  async updateMatchScore(id: number, gameScores: [number, number][], winnerId: string): Promise<void> {
+  async updateMatchScore(id: number, gameScores: [number, number][], winnerId: string, createdAt?: string): Promise<void> {
     await this.ensureTables();
     const gameScoresJson = JSON.stringify(gameScores);
-    await this.sql`
-      UPDATE matches
-      SET game_scores = ${gameScoresJson}, winner_id = ${winnerId}
-      WHERE id = ${id}
-    `;
+    if (createdAt) {
+      const isoDate = new Date(createdAt).toISOString();
+      await this.sql`
+        UPDATE matches
+        SET game_scores = ${gameScoresJson}, winner_id = ${winnerId}, created_at = ${isoDate}
+        WHERE id = ${id}
+      `;
+    } else {
+      await this.sql`
+        UPDATE matches
+        SET game_scores = ${gameScoresJson}, winner_id = ${winnerId}
+        WHERE id = ${id}
+      `;
+    }
   }
 }
 

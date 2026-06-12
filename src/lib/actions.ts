@@ -115,7 +115,7 @@ export async function deleteMatchAction(id: number) {
 }
 
 // 6. Update a match score (Admin)
-export async function updateMatchScoreAction(id: number, gameScores: [number, number][]) {
+export async function updateMatchScoreAction(id: number, gameScores: [number, number][], createdAt?: string) {
   try {
     if (!id) {
       return { success: false, error: 'Match ID is required.' };
@@ -137,7 +137,7 @@ export async function updateMatchScoreAction(id: number, gameScores: [number, nu
     // Determine new winner
     const winnerId = validation.winnerIndex === 0 ? match.player1_id : match.player2_id;
 
-    await db.updateMatchScore(id, gameScores, winnerId);
+    await db.updateMatchScore(id, gameScores, winnerId, createdAt);
     
     revalidatePath('/');
     revalidatePath('/admin');
