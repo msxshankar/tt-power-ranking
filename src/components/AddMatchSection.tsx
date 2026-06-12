@@ -282,10 +282,10 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
                 fontWeight: 700,
                 borderRadius: '12px',
                 ...(matchType === '11' ? {
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  background: 'var(--accent-gradient)',
                   color: 'white',
                   border: 'none',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                  boxShadow: '0 4px 14px var(--accent-glow)',
                 } : {}),
               }}
               onClick={() => setMatchType('11')}
@@ -302,10 +302,10 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
                 fontWeight: 700,
                 borderRadius: '12px',
                 ...(matchType === '21' ? {
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  background: 'var(--accent-gradient)',
                   color: 'white',
                   border: 'none',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                  boxShadow: '0 4px 14px var(--accent-glow)',
                 } : {}),
               }}
               onClick={() => setMatchType('21')}
