@@ -274,13 +274,19 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               type="button"
-              className={`btn ${matchType === '11' ? 'btn-primary' : ''}`}
+              className="btn"
               style={{
                 flex: 1,
                 padding: '12px 16px',
                 fontSize: '14px',
                 fontWeight: 700,
                 borderRadius: '12px',
+                ...(matchType === '11' ? {
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  color: 'white',
+                  border: 'none',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                } : {}),
               }}
               onClick={() => setMatchType('11')}
             >
@@ -288,13 +294,19 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
             </button>
             <button
               type="button"
-              className={`btn ${matchType === '21' ? 'btn-primary' : ''}`}
+              className="btn"
               style={{
                 flex: 1,
                 padding: '12px 16px',
                 fontSize: '14px',
                 fontWeight: 700,
                 borderRadius: '12px',
+                ...(matchType === '21' ? {
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  color: 'white',
+                  border: 'none',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                } : {}),
               }}
               onClick={() => setMatchType('21')}
             >
