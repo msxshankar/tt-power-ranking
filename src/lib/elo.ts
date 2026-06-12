@@ -130,22 +130,27 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     p1.elo = Math.round(r1 + K * (s1 - e1));
     p2.elo = Math.round(r2 + K * (s2 - e2));
 
-    // Update wins & losses
-    if (match.match_type === '11') {
-      if (isP1Winner) {
-        p1.wins11++;
-        p2.losses11++;
+    // Update wins & losses based on individual game scores
+    for (const [s1, s2] of match.game_scores) {
+      const isGame11 = match.match_type === '11';
+      if (s1 > s2) {
+        // Player 1 won this game
+        if (isGame11) {
+          p1.wins11++;
+          p2.losses11++;
+        } else {
+          p1.wins21++;
+          p2.losses21++;
+        }
       } else {
-        p1.losses11++;
-        p2.wins11++;
-      }
-    } else {
-      if (isP1Winner) {
-        p1.wins21++;
-        p2.losses21++;
-      } else {
-        p1.losses21++;
-        p2.wins21++;
+        // Player 2 won this game
+        if (isGame11) {
+          p1.losses11++;
+          p2.wins11++;
+        } else {
+          p1.losses21++;
+          p2.wins21++;
+        }
       }
     }
 

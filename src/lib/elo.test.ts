@@ -75,19 +75,19 @@ const mockMatches: Match[] = [
 const rankings = calculateRankings(mockPlayers, mockMatches);
 const stats = rankings.playerStats;
 
-// Alice stats (1 win, 0 losses in 11, ELO should go up from 1200)
+// Alice stats (2 game wins, 0 losses in 11, ELO should go up from 1200)
 const alice = stats.find(p => p.id === 'p1')!;
-assert(alice.wins11 === 1 && alice.losses11 === 0, 'Alice should have 1 win and 0 losses for games to 11');
+assert(alice.wins11 === 2 && alice.losses11 === 0, 'Alice should have 2 wins and 0 losses for games to 11');
 assert(alice.elo > 1200, 'Alice ELO should have increased');
 
-// Charlie stats (0 wins, 1 loss in 21, ELO should go down from 1200)
+// Charlie stats (0 wins, 2 losses in 21, ELO should go down from 1200)
 const charlie = stats.find(p => p.id === 'p3')!;
-assert(charlie.wins21 === 0 && charlie.losses21 === 1, 'Charlie should have 0 wins and 1 loss for games to 21');
+assert(charlie.wins21 === 0 && charlie.losses21 === 2, 'Charlie should have 0 wins and 2 losses for games to 21');
 assert(charlie.elo < 1200, 'Charlie ELO should have decreased');
 
-// Bob stats (1 loss in 11, 1 win in 21)
+// Bob stats (2 losses in 11, 2 wins in 21)
 const bob = stats.find(p => p.id === 'p2')!;
-assert(bob.wins21 === 1 && bob.losses11 === 1, 'Bob should have 1 win in 21 and 1 loss in 11');
+assert(bob.wins21 === 2 && bob.losses11 === 2, 'Bob should have 2 wins in 21 and 2 losses in 11');
 
 // Ranking orders
 assert(rankings.playerStats[0].id === 'p1', 'Alice should be ranked #1');
