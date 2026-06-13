@@ -292,7 +292,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
             Manage players, update match scores, and remove entries
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <Link href="/" className="btn btn-sm">
             ← Back to Dashboard
           </Link>
