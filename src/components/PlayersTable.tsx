@@ -134,19 +134,25 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
                     </span>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <span className="badge badge-win">{p.wins11} W</span>
-                    <span style={{ margin: '0 4px', color: 'var(--text-muted)' }}>-</span>
-                    <span className="badge badge-loss">{p.losses11} L</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                      <span className="badge badge-win">{p.wins11} W</span>
+                      <span style={{ color: 'var(--text-muted)' }}>-</span>
+                      <span className="badge badge-loss">{p.losses11} L</span>
+                    </div>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <span className="badge badge-win">{p.wins21} W</span>
-                    <span style={{ margin: '0 4px', color: 'var(--text-muted)' }}>-</span>
-                    <span className="badge badge-loss">{p.losses21} L</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                      <span className="badge badge-win">{p.wins21} W</span>
+                      <span style={{ color: 'var(--text-muted)' }}>-</span>
+                      <span className="badge badge-loss">{p.losses21} L</span>
+                    </div>
                   </td>
                   <td style={{ textAlign: 'center', fontWeight: 500 }}>
-                    <span className="badge badge-neutral">
-                      {p.totalWins}W - {p.totalLosses}L
-                    </span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
+                      <span className="badge badge-neutral">
+                        {p.totalWins}W - {p.totalLosses}L
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ))
