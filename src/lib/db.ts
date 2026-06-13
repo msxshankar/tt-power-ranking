@@ -10,7 +10,7 @@ export interface Database {
   addPlayer(name: string): Promise<Player>;
   deletePlayer(id: string): Promise<void>;
   renamePlayer(id: string, name: string): Promise<void>;
-  addMatch(match: Omit<Match, 'id' | 'created_at'>): Promise<Match>;
+  addMatch(match: Omit<Match, 'id' | 'created_at'> & { created_at?: string }): Promise<Match>;
   deleteMatch(id: number): Promise<void>;
   updateMatchScore(id: number, gameScores: [number, number][], winnerId: string, createdAt?: string): Promise<void>;
 }
@@ -83,12 +83,12 @@ class JsonDatabase implements Database {
     this.writeData(data);
   }
 
-  async addMatch(match: Omit<Match, 'id' | 'created_at'>): Promise<Match> {
+  async addMatch(match: Omit<Match, 'id' | 'created_at'> & { created_at?: string }): Promise<Match> {
     const data = this.readData();
     const newMatch: Match = {
       ...match,
       id: data.nextMatchId++,
-      created_at: new Date().toISOString(),
+      created_at: match.created_at ? new Date(match.created_at).toISOString() : new Date().toISOString(),
     };
     data.matches.push(newMatch);
     this.writeData(data);
@@ -204,14 +204,20 @@ class NeonDatabase implements Database {
     await this.sql`UPDATE players SET name = ${cleanName} WHERE id = ${id}`;
   }
 
-  async addMatch(match: Omit<Match, 'id' | 'created_at'>): Promise<Match> {
+  async addMatch(match: Omit<Match, 'id' | 'created_at'> & { created_at?: string }): Promise<Match> {
     await this.ensureTables();
     const gameScoresJson = JSON.stringify(match.game_scores);
-    const rows = await this.sql`
-      INSERT INTO matches (player1_id, player2_id, match_type, game_scores, winner_id)
-      VALUES (${match.player1_id}, ${match.player2_id}, ${match.match_type}, ${gameScoresJson}, ${match.winner_id})
-      RETURNING *
-    `;
+    const rows = match.created_at
+      ? await this.sql`
+          INSERT INTO matches (player1_id, player2_id, match_type, game_scores, winner_id, created_at)
+          VALUES (${match.player1_id}, ${match.player2_id}, ${match.match_type}, ${gameScoresJson}, ${match.winner_id}, ${new Date(match.created_at).toISOString()})
+          RETURNING *
+        `
+      : await this.sql`
+          INSERT INTO matches (player1_id, player2_id, match_type, game_scores, winner_id)
+          VALUES (${match.player1_id}, ${match.player2_id}, ${match.match_type}, ${gameScoresJson}, ${match.winner_id})
+          RETURNING *
+        `;
     const r = rows[0];
     return {
       id: Number(r.id),

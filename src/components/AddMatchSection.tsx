@@ -24,6 +24,13 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [matchDate, setMatchDate] = useState(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
 
   // New player inline creation states
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false);
@@ -127,7 +134,18 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
     }
 
     setIsSubmitting(true);
-    const result = await addMatchAction(player1Id, player2Id, matchType, games as [number, number][]);
+    const now = new Date();
+    const [year, month, day] = matchDate.split('-').map(Number);
+    const dateObj = new Date(
+      year,
+      month - 1,
+      day,
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds(),
+      now.getMilliseconds()
+    );
+    const result = await addMatchAction(player1Id, player2Id, matchType, games as [number, number][], dateObj.toISOString());
     setIsSubmitting(false);
 
     if (result.success) {
@@ -135,6 +153,11 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
       // Reset form
       setPlayer1Id('');
       setPlayer2Id('');
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      setMatchDate(`${y}-${m}-${d}`);
       setGames([
         ['', ''],
         ['', ''],
@@ -266,6 +289,19 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Match Date */}
+        <div className="form-group" style={{ marginBottom: '12px' }}>
+          <label className="form-label">Match Date</label>
+          <input
+            type="date"
+            value={matchDate}
+            onChange={(e) => setMatchDate(e.target.value)}
+            className="form-input"
+            required
+            style={{ padding: '10px 12px', fontSize: '14px' }}
+          />
         </div>
 
         {/* Match Type */}

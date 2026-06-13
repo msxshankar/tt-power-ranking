@@ -71,7 +71,8 @@ export async function addMatchAction(
   player1Id: string,
   player2Id: string,
   matchType: '11' | '21',
-  gameScores: [number, number][]
+  gameScores: [number, number][],
+  createdAt?: string
 ) {
   try {
     if (!player1Id || !player2Id) {
@@ -104,6 +105,7 @@ export async function addMatchAction(
       match_type: matchType,
       game_scores: gameScores,
       winner_id: winnerId,
+      created_at: createdAt,
     });
 
     try {
