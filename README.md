@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏓 TT Power Ranker
 
-## Getting Started
+**TT Power Ranker** is a responsive, modern web application designed to track and calculate live table tennis rankings for a group of friends. Using the Elo rating algorithm, it automatically generates a power leaderboard, logs matches, and allows users to easily manage games.
 
-First, run the development server:
+---
+
+## ✨ Features
+
+- **Live Power Leaderboard**: Computes real-time Elo ratings and highlights the Top 5 players on a podium.
+- **Match Recording Form**:
+  - Record singles matches (1v1).
+  - Select any custom date for the match (defaults to today's date).
+  - Supports game point limits of **11** and **21** points.
+  - Validates game scores automatically, enforcing the table tennis rule of winning by 2 clear points.
+- **Player Stats Table**: Displays a detailed breakdown of wins, losses, and Elo scores segmented by game point rules (11 vs 21 points).
+- **Recent Activity Log**: Shows a live log of the last 5 matches played.
+- **Interactive ELO History Chart**: Visualizes how players' rankings evolve over time.
+- **🛡️ Admin Panel**:
+  - Secure login with the password `tabletennis`.
+  - Rename or delete players.
+  - Edit or delete historical matches, including scores and dates.
+- **🎨 Glassmorphic Interface**: Responsive layout using fluid animations, Apple's liquid glass styling, and a light/dark mode toggle that automatically defaults to device/browser system preferences.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (with React 19)
+- **Database**:
+  - **Local Development**: Local JSON file database (`db.json`).
+  - **Production**: PostgreSQL via [Neon Database](https://neon.tech/).
+- **Styling**: Modern vanilla CSS with a glassmorphism design system.
+- **Tests**: Direct TypeScript business logic validation runs.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have Node.js (v20+) installed on your machine.
+
+### Installation
+
+1. Clone this repository to your local machine.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Running Locally
+
+To run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧪 Testing and Building
 
-## Learn More
+### Running Tests
+To run core ELO calculation and score validation tests:
+```bash
+npx tsx src/lib/elo.test.ts
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Production Build
+To test the build process:
+```bash
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔐 Admin Password
+The password to unlock the Admin Panel features is: `tabletennis`
