@@ -21,7 +21,7 @@ export default function RootLayout({
               (function() {
                 try {
                   const storedTheme = localStorage.getItem('theme');
-                  const theme = storedTheme || 'light';
+                  const theme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
                   document.documentElement.setAttribute('data-theme', theme);
                 } catch (e) {}
               })();
