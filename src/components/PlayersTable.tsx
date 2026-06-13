@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlayerStats } from '@/lib/types';
 import { addPlayerAction } from '@/lib/actions';
 
@@ -71,6 +71,51 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
       setError(result.error || 'Failed to create player.');
     }
   };
+
+  // Celebration state and effect
+  const [newLeaderToast, setNewLeaderToast] = useState<string | null>(null);
+  const currentLeader = initialStats[0];
+  const currentLeaderId = currentLeader?.id;
+  const currentLeaderName = currentLeader?.name;
+
+  useEffect(() => {
+    if (!currentLeaderId || !currentLeaderName) return;
+    const previousLeaderId = localStorage.getItem('previous_leader_id');
+    if (previousLeaderId && previousLeaderId !== currentLeaderId) {
+      // Set toast message
+      setNewLeaderToast(currentLeaderName);
+      
+      // Shower confetti!
+      import('canvas-confetti').then((confetti) => {
+        const duration = 4 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1200 };
+
+        function randomInRange(min: number, max: number) {
+          return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 50 * (timeLeft / duration);
+          confetti.default({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+          confetti.default({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+      });
+
+      // Clear toast after 5 seconds
+      setTimeout(() => {
+        setNewLeaderToast(null);
+      }, 5000);
+    }
+    // Update local storage
+    localStorage.setItem('previous_leader_id', currentLeaderId);
+  }, [currentLeaderId, currentLeaderName]);
 
   return (
     <div className="glass-panel glass-card" style={{ marginTop: '24px' }}>
@@ -216,6 +261,32 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* New Leader Celebration Toast */}
+      {newLeaderToast && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'var(--accent-gradient)',
+          color: 'white',
+          padding: '16px 32px',
+          borderRadius: '16px',
+          boxShadow: '0 10px 25px var(--accent-glow)',
+          zIndex: 1100,
+          fontWeight: 700,
+          fontSize: '18px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          animation: 'slideDownAndFade 5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+        }}>
+          👑 New ELO Leader: {newLeaderToast}! 🎉
         </div>
       )}
     </div>

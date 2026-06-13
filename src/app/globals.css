@@ -777,3 +777,10 @@ a {
     gap: 8px;
   }
 }
+
+@keyframes slideDownAndFade {
+  0% { transform: translate(-50%, -20px); opacity: 0; }
+  15% { transform: translate(-50%, 0); opacity: 1; }
+  85% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -20px); opacity: 0; }
+}
