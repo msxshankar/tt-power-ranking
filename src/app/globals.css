@@ -777,6 +777,12 @@ a {
     font-size: 13px;
   }
 
+  .table td .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
   .badge {
     padding: 2px 4px;
     font-size: 11px;
@@ -785,6 +791,13 @@ a {
 
   .table-wrapper {
     margin-top: 8px;
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .admin-grid > section {
+    min-width: 0;
   }
 
   /* Make form elements and buttons a bit more compact on mobile */
