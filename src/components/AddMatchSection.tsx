@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Player } from '@/lib/types';
-import { addPlayerAction, addMatchAction } from '@/lib/actions';
+import { addMatchAction } from '@/lib/actions';
 import { isValidGameScore } from '@/lib/elo';
 
 interface AddMatchSectionProps {
@@ -32,14 +32,8 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
     return `${year}-${month}-${day}`;
   });
 
-  // New player inline creation states
-  const [showNewPlayerForm, setShowNewPlayerForm] = useState(false);
-  const [newPlayerName, setNewPlayerName] = useState('');
-  const [newPlayerError, setNewPlayerError] = useState('');
-  const [isCreatingPlayer, setIsCreatingPlayer] = useState(false);
-
   // Sync state if initialPlayers changes (e.g. from server refresh)
-  if (initialPlayers.length !== players.length && !isCreatingPlayer) {
+  if (initialPlayers.length !== players.length) {
     setPlayers(initialPlayers);
   }
 
@@ -64,37 +58,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
     setGames(games.filter((_, i) => i !== index));
   };
 
-  // Handle inline player creation
-  const handleCreatePlayer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setNewPlayerError('');
-    const cleanName = newPlayerName.trim();
-    if (!cleanName) {
-      setNewPlayerError('Name cannot be empty.');
-      return;
-    }
 
-    setIsCreatingPlayer(true);
-    const result = await addPlayerAction(cleanName);
-    setIsCreatingPlayer(false);
-
-    if (result.success && result.player) {
-      const created = result.player;
-      setPlayers(prev => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
-      setNewPlayerName('');
-      setShowNewPlayerForm(false);
-      
-      // Auto-select the newly created player
-      if (!player1Id) {
-        setPlayer1Id(created.id);
-      } else if (!player2Id) {
-        setPlayer2Id(created.id);
-      }
-      router.refresh();
-    } else {
-      setNewPlayerError(result.error || 'Failed to create player.');
-    }
-  };
 
   // Handle Match submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -180,46 +144,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
         </span>
       </h2>
 
-      {/* Inline Create Player Form Toggle */}
-      {showNewPlayerForm ? (
-        <form onSubmit={handleCreatePlayer} style={{ marginBottom: '20px', padding: '12px', borderRadius: '12px', background: 'rgba(0,0,0,0.03)' }}>
-          <h3 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '8px' }}>Create New Player</h3>
-          <div className="form-group" style={{ marginBottom: '8px' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                value={newPlayerName}
-                onChange={(e) => setNewPlayerName(e.target.value)}
-                className="form-input"
-                placeholder="e.g. Roger Federer"
-                disabled={isCreatingPlayer}
-                style={{ padding: '8px 12px', fontSize: '14px' }}
-              />
-              <button type="submit" className="btn btn-sm btn-primary" disabled={isCreatingPlayer}>
-                {isCreatingPlayer ? '...' : 'Create'}
-              </button>
-            </div>
-            {newPlayerError && <span style={{ color: 'var(--tag-loss-text)', fontSize: '12px', fontWeight: 600 }}>{newPlayerError}</span>}
-          </div>
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={() => setShowNewPlayerForm(false)}
-            style={{ width: '100%', padding: '6px' }}
-          >
-            Cancel
-          </button>
-        </form>
-      ) : (
-        <button
-          type="button"
-          className="btn btn-sm btn-primary"
-          onClick={() => setShowNewPlayerForm(true)}
-          style={{ width: '100%', marginBottom: '20px', padding: '8px' }}
-        >
-          ＋ Create New Player
-        </button>
-      )}
+
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         {error && (
