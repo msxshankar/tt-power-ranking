@@ -721,11 +721,14 @@ a {
   .header {
     padding: 12px 16px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 16px;
   }
 
-  .header > div:first-child {
+  .admin-header-nav {
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+  }
+
+  .admin-header-nav > div:first-child {
     min-width: 280px;
     flex-grow: 1;
   }

@@ -285,7 +285,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
   return (
     <main className="container">
       {/* Admin Header */}
-      <header className="glass-panel header">
+      <header className="glass-panel header admin-header-nav">
         <div>
           <h1 className="logo-text">Admin Panel</h1>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
