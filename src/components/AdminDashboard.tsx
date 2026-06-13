@@ -327,7 +327,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                   <tr>
                     <th>ID</th>
                     <th>Players & Winner</th>
-                    <th>Score</th>
+                    <th className="hide-on-mobile">Score</th>
                     <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
@@ -350,11 +350,31 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                             {getPlayerName(match.player2_id)}
                           </span>
                         </div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                          Rule: Games to {match.match_type} points
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            Rule: {match.match_type} pts
+                          </span>
+                          <div className="show-on-mobile" style={{ gap: '4px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>&bull; Scores:</span>
+                            {match.game_scores.map(([s1, s2], idx) => (
+                              <span
+                                key={idx}
+                                style={{
+                                  background: 'var(--input-bg)',
+                                  border: '1px solid var(--input-border)',
+                                  fontSize: '11px',
+                                  padding: '1px 5px',
+                                  borderRadius: '4px',
+                                  color: 'var(--text-secondary)'
+                                }}
+                              >
+                                {s1}:{s2}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </td>
-                      <td>
+                      <td className="hide-on-mobile">
                         <div style={{ display: 'flex', gap: '4px' }}>
                           {match.game_scores.map(([s1, s2], idx) => (
                             <span

@@ -700,8 +700,20 @@ a {
   font-size: 15px;
 }
 
+.show-on-mobile {
+  display: none !important;
+}
+
 /* Mobile Responsive Optimizations */
 @media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .show-on-mobile {
+    display: inline-flex !important;
+  }
+
   .container {
     padding: 16px 8px;
   }
