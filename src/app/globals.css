@@ -38,9 +38,9 @@
 
 [data-theme="dark"] {
   /* Color Palette - Dark Mode */
-  --background-gradient: linear-gradient(135deg, #030712 0%, #080f25 50%, #030712 100%);
-  --glass-bg: rgba(15, 23, 42, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --background-gradient: linear-gradient(135deg, #000000 0%, #0c0c0e 50%, #000000 100%);
+  --glass-bg: rgba(10, 10, 12, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.05);
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
@@ -51,11 +51,11 @@
   --accent-light: rgba(96, 165, 250, 0.15);
   --accent-glow: rgba(96, 165, 250, 0.35);
   
-  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-  --inset-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+  --inset-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   
-  --input-bg: rgba(15, 23, 42, 0.8);
-  --input-border: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(0, 0, 0, 0.7);
+  --input-border: rgba(255, 255, 255, 0.08);
   --input-focus: #60a5fa;
   
   --tag-win-bg: rgba(74, 222, 128, 0.15);
@@ -65,7 +65,7 @@
   --tag-neutral-bg: rgba(148, 163, 184, 0.15);
   --tag-neutral-text: #cbd5e1;
   
-  --modal-overlay: rgba(0, 0, 0, 0.45);
+  --modal-overlay: rgba(0, 0, 0, 0.6);
   --glass-blur: blur(24px) saturate(200%);
 }
 
