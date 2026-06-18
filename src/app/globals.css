@@ -238,6 +238,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
 }
 
 .form-label {
@@ -262,6 +263,12 @@ a {
 .form-input:focus, .form-select:focus {
   border-color: var(--input-focus);
   box-shadow: 0 0 0 3px var(--accent-glow), var(--inset-shadow);
+}
+
+.form-input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  max-width: 100%;
 }
 
 /* Table Design */
