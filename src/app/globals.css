@@ -256,6 +256,7 @@ a {
   outline: none;
   box-shadow: var(--inset-shadow);
   width: 100%;
+  min-width: 0;
 }
 
 .form-input:focus, .form-select:focus {
