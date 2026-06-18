@@ -244,9 +244,9 @@ export function formatDate(isoString: string): string {
   if (isNaN(date.getTime())) return 'Unknown Date';
   
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const day = date.getDate();
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
+  const day = date.getUTCDate();
+  const month = months[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
   
   return `${month} ${day}, ${year}`;
 }

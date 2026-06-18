@@ -117,6 +117,7 @@ class JsonDatabase implements Database {
 // Postgres/Neon implementation for production
 class NeonDatabase implements Database {
   private sql;
+  private initialized = false;
 
   constructor() {
     const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
@@ -127,6 +128,7 @@ class NeonDatabase implements Database {
   }
 
   private async ensureTables() {
+    if (this.initialized) return;
     await this.sql`
       CREATE TABLE IF NOT EXISTS players (
         id TEXT PRIMARY KEY,
@@ -145,6 +147,7 @@ class NeonDatabase implements Database {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+    this.initialized = true;
   }
 
   async getPlayers(): Promise<Player[]> {
@@ -153,7 +156,7 @@ class NeonDatabase implements Database {
     return rows.map(r => ({
       id: r.id,
       name: r.name,
-      created_at: r.created_at,
+      created_at: String(r.created_at),
     }));
   }
 
@@ -167,7 +170,7 @@ class NeonDatabase implements Database {
       match_type: r.match_type as '11' | '21',
       game_scores: JSON.parse(r.game_scores),
       winner_id: r.winner_id,
-      created_at: r.created_at,
+      created_at: String(r.created_at),
     }));
   }
 
@@ -185,7 +188,7 @@ class NeonDatabase implements Database {
     return {
       id: r.id,
       name: r.name,
-      created_at: r.created_at,
+      created_at: String(r.created_at),
     };
   }
 
@@ -201,6 +204,8 @@ class NeonDatabase implements Database {
     await this.ensureTables();
     const cleanName = name.trim();
     if (!cleanName) throw new Error('Name cannot be empty');
+    const existing = await this.sql`SELECT id FROM players WHERE LOWER(name) = LOWER(${cleanName}) AND id != ${id}`;
+    if (existing.length > 0) throw new Error(`Player "${cleanName}" already exists`);
     await this.sql`UPDATE players SET name = ${cleanName} WHERE id = ${id}`;
   }
 
@@ -226,7 +231,7 @@ class NeonDatabase implements Database {
       match_type: r.match_type as '11' | '21',
       game_scores: JSON.parse(r.game_scores),
       winner_id: r.winner_id,
-      created_at: r.created_at,
+      created_at: String(r.created_at),
     };
   }
 

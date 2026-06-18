@@ -12,7 +12,7 @@ interface AddMatchSectionProps {
 
 export default function AddMatchSection({ players: initialPlayers }: AddMatchSectionProps) {
   const router = useRouter();
-  const [players, setPlayers] = useState<Player[]>(initialPlayers);
+
   const [player1Id, setPlayer1Id] = useState('');
   const [player2Id, setPlayer2Id] = useState('');
   const [matchType, setMatchType] = useState<'11' | '21'>('11');
@@ -32,10 +32,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
     return `${year}-${month}-${day}`;
   });
 
-  // Sync state if initialPlayers changes (e.g. from server refresh)
-  if (initialPlayers.length !== players.length) {
-    setPlayers(initialPlayers);
-  }
+
 
   // Handle score change
   const handleScoreChange = (gameIndex: number, playerIndex: 0 | 1, value: string) => {
@@ -189,7 +186,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
               required
             >
               <option value="">Select...</option>
-              {players.map((p) => (
+              {initialPlayers.map((p) => (
                 <option key={p.id} value={p.id} disabled={p.id === player2Id}>
                   {p.name}
                 </option>
@@ -207,7 +204,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
               required
             >
               <option value="">Select...</option>
-              {players.map((p) => (
+              {initialPlayers.map((p) => (
                 <option key={p.id} value={p.id} disabled={p.id === player1Id}>
                   {p.name}
                 </option>

@@ -228,7 +228,7 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
             
             {/* Dynamic area gradients for each player */}
             {playerNames.map(name => (
-              <linearGradient key={name} id={`grad-${name.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient key={name} id={`grad-${name.replace(/[^a-zA-Z0-9_-]/g, '_')}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={playerColors[name]} stopOpacity="0.15" />
                 <stop offset="100%" stopColor={playerColors[name]} stopOpacity="0.0" />
               </linearGradient>
@@ -324,7 +324,7 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
                 {/* Shaded Area Under Curve */}
                 <path
                   d={areaPath}
-                  fill={`url(#grad-${name.replace(/\s+/g, '-')})`}
+                  fill={`url(#grad-${name.replace(/[^a-zA-Z0-9_-]/g, '_')})`}
                   style={{ pointerEvents: 'none' }}
                 />
                 {/* ELO Line */}

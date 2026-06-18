@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { PlayerStats } from '@/lib/types';
 import { addPlayerAction } from '@/lib/actions';
 
@@ -12,6 +13,7 @@ type SortField = 'name' | 'elo' | 'wins11' | 'wins21' | 'totalWins';
 type SortOrder = 'asc' | 'desc';
 
 export default function PlayersTable({ initialStats }: PlayersTableProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('elo');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -67,6 +69,7 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
     if (result.success) {
       setNewPlayerName('');
       setShowAddModal(false);
+      router.refresh();
     } else {
       setError(result.error || 'Failed to create player.');
     }
@@ -80,6 +83,8 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
 
   useEffect(() => {
     if (!currentLeaderId || !currentLeaderName) return;
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const previousLeaderId = localStorage.getItem('previous_leader_id');
     if (previousLeaderId && previousLeaderId !== currentLeaderId) {
       // Set toast message
@@ -95,11 +100,11 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
           return Math.random() * (max - min) + min;
         }
 
-        const interval = setInterval(function() {
+        intervalId = setInterval(function() {
           const timeLeft = animationEnd - Date.now();
 
           if (timeLeft <= 0) {
-            return clearInterval(interval);
+            return clearInterval(intervalId);
           }
 
           const particleCount = 50 * (timeLeft / duration);
@@ -109,12 +114,13 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
       });
 
       // Clear toast after 5 seconds
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         setNewLeaderToast(null);
       }, 5000);
     }
     // Update local storage
     localStorage.setItem('previous_leader_id', currentLeaderId);
+    return () => { clearInterval(intervalId); clearTimeout(timeoutId); };
   }, [currentLeaderId, currentLeaderName]);
 
   return (

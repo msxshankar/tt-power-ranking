@@ -16,9 +16,9 @@ function formatDateForInput(isoString: string): string {
   if (!isoString) return '';
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
@@ -218,7 +218,22 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     }
 
     setIsSavingMatch(true);
-    const result = await updateMatchScoreAction(editingMatch.id, editedGames as [number, number][], editedDate);
+    
+    // Combine editedDate with original match time to prevent timezone off-by-one shifts
+    const [year, month, day] = editedDate.split('-').map(Number);
+    const originalDate = new Date(editingMatch.created_at);
+    const dateObj = new Date(
+      year,
+      month - 1,
+      day,
+      isNaN(originalDate.getTime()) ? 12 : originalDate.getHours(),
+      isNaN(originalDate.getTime()) ? 0 : originalDate.getMinutes(),
+      isNaN(originalDate.getTime()) ? 0 : originalDate.getSeconds(),
+      isNaN(originalDate.getTime()) ? 0 : originalDate.getMilliseconds()
+    );
+    const dateIsoString = dateObj.toISOString();
+
+    const result = await updateMatchScoreAction(editingMatch.id, editedGames as [number, number][], dateIsoString);
     setIsSavingMatch(false);
 
     if (result.success) {
@@ -226,7 +241,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
         ...m,
         game_scores: editedGames as [number, number][],
         winner_id: p1Wins > p2Wins ? m.player1_id : m.player2_id,
-        created_at: editedDate ? new Date(editedDate).toISOString() : m.created_at
+        created_at: dateIsoString
       } : m));
       setEditingMatch(null);
       router.refresh();

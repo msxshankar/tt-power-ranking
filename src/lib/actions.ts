@@ -82,6 +82,10 @@ export async function addMatchAction(
       return { success: false, error: 'A player cannot play against themselves.' };
     }
 
+    if (matchType !== '11' && matchType !== '21') {
+      return { success: false, error: 'Invalid match type. Must be 11 or 21.' };
+    }
+
     // Verify players exist
     const players = await db.getPlayers();
     const p1 = players.find(p => p.id === player1Id);
