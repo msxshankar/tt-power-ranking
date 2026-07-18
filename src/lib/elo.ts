@@ -203,8 +203,8 @@ export function calculateRankings(players: Player[], matches: Match[]): {
   // Sort by Elo rating descending
   const sortedPlayers = [...playerStatsList].sort((a, b) => b.elo - a.elo);
 
-  // Top 5 players (or all players if less than 5)
-  const top5 = sortedPlayers.slice(0, 5);
+  // Top 5 players (or all players if less than 5) who have played at least one match
+  const top5 = sortedPlayers.filter(p => (p.totalWins + p.totalLosses) > 0).slice(0, 5);
 
   // Last 5 recent matches, mapped with player names and game totals
   const recentRaw = sortedMatches.slice(-5).reverse();

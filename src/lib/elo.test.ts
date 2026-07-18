@@ -47,6 +47,7 @@ const mockPlayers: Player[] = [
   { id: 'p1', name: 'Alice', created_at: '' },
   { id: 'p2', name: 'Bob', created_at: '' },
   { id: 'p3', name: 'Charlie', created_at: '' },
+  { id: 'p4', name: 'David', created_at: '' },
 ];
 
 const mockMatches: Match[] = [
@@ -91,7 +92,8 @@ assert(bob.wins21 === 2 && bob.losses11 === 2, 'Bob should have 2 wins in 21 and
 
 // Ranking orders
 assert(rankings.playerStats[0].id === 'p1', 'Alice should be ranked #1');
-assert(rankings.top5.length === 3, 'Top 5 should return all 3 players');
+assert(rankings.top5.length === 3, 'Top 5 should return all 3 active players (excluding David)');
+assert(rankings.top5.find(p => p.id === 'p4') === undefined, 'David should not be in Top 5 since he has 0 matches');
 assert(rankings.recentMatches.length === 2, 'Should return both matches');
 assert(rankings.recentMatches[0].id === 2, 'Recent matches should be sorted in reverse (newest first)');
 assert(rankings.recentMatches[0].player1_name === 'Bob', 'Player names should be mapped correctly');
