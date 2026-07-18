@@ -151,6 +151,7 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
         <table className="table">
           <thead>
             <tr>
+              <th style={{ width: '60px', textAlign: 'center' }}>#</th>
               <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
                 Player Name {sortField === 'name' && (sortOrder === 'asc' ? '▲' : '▼')}
               </th>
@@ -171,13 +172,14 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
           <tbody>
             {sortedStats.length === 0 ? (
               <tr>
-                <td colSpan={5} className="empty-state">
+                <td colSpan={6} className="empty-state">
                   No players found matching your query.
                 </td>
               </tr>
             ) : (
-              sortedStats.map((p) => (
+              sortedStats.map((p, index) => (
                 <tr key={p.id}>
+                  <td style={{ textAlign: 'center', fontWeight: 600, color: 'var(--text-muted)' }}>{index + 1}</td>
                   <td style={{ fontWeight: 600 }}>{p.name}</td>
                   <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--accent-color)' }}>
                     <span style={{ background: 'var(--accent-light)', padding: '4px 10px', borderRadius: '8px' }}>
