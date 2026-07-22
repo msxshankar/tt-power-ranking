@@ -99,4 +99,46 @@ assert(rankings.recentMatches[0].id === 2, 'Recent matches should be sorted in r
 assert(rankings.recentMatches[0].player1_name === 'Bob', 'Player names should be mapped correctly');
 
 console.log('✅ calculateRankings tests passed.\n');
+
+// 4. Test calculateRankings with backdated matches
+console.log('Testing calculateRankings with backdated matches...');
+const backdatePlayers: Player[] = [
+  { id: 'pa', name: 'Alice', created_at: '2026-01-01T00:00:00Z' },
+  { id: 'pb', name: 'Bob', created_at: '2026-01-01T00:00:00Z' },
+];
+
+const backdateMatches: Match[] = [
+  // Match #1 logged on Jan 2nd (Bob wins)
+  {
+    id: 1,
+    player1_id: 'pa',
+    player2_id: 'pb',
+    match_type: '11',
+    game_scores: [[9, 11], [8, 11]],
+    winner_id: 'pb',
+    created_at: '2026-01-02T10:00:00Z',
+  },
+  // Match #2 logged later with higher ID, but backdated to Jan 1st (Alice wins)
+  {
+    id: 2,
+    player1_id: 'pa',
+    player2_id: 'pb',
+    match_type: '11',
+    game_scores: [[11, 9], [11, 8]],
+    winner_id: 'pa',
+    created_at: '2026-01-01T10:00:00Z',
+  },
+];
+
+const backdateRankings = calculateRankings(backdatePlayers, backdateMatches);
+// Verify that Match #2 (Jan 1st) was processed before Match #1 (Jan 2nd)
+assert(backdateRankings.eloHistory[1].matchId === 2, 'Backdated match #2 (Jan 1st) must be processed first in eloHistory');
+assert(backdateRankings.eloHistory[2].matchId === 1, 'Match #1 (Jan 2nd) must be processed second in eloHistory');
+
+const paStats = backdateRankings.playerStats.find(p => p.id === 'pa')!;
+const pbStats = backdateRankings.playerStats.find(p => p.id === 'pb')!;
+// In chronological order (Jan 1st: Alice beats Bob, Jan 2nd: Bob beats 1216-rated Alice):
+assert(paStats.elo === 1199 && pbStats.elo === 1201, 'Ratings calculated accurately in chronological order');
+console.log('✅ Backdated match sorting tests passed.\n');
+
 console.log('🎉 All core business logic tests completed successfully!');

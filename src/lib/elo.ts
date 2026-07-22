@@ -109,8 +109,22 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     };
   }
 
-  // Process all matches in chronological order (sorted by id)
-  const sortedMatches = [...matches].sort((a, b) => a.id - b.id);
+  // Helper to safely get timestamp value for sorting
+  const getMatchTime = (createdAt?: string): number => {
+    if (!createdAt) return 0;
+    const t = new Date(createdAt).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
+  // Process all matches in chronological order (sorted by created_at timestamp, falling back to id)
+  const sortedMatches = [...matches].sort((a, b) => {
+    const timeA = getMatchTime(a.created_at);
+    const timeB = getMatchTime(b.created_at);
+    if (timeA !== timeB) {
+      return timeA - timeB;
+    }
+    return a.id - b.id;
+  });
 
   const eloHistory: {
     label: string;
