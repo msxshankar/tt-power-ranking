@@ -35,7 +35,9 @@ class JsonDatabase implements Database {
   }
 
   private writeData(data: { players: Player[]; matches: Match[]; nextMatchId: number }) {
-    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
+    const tempPath = `${this.filePath}.tmp`;
+    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8');
+    fs.renameSync(tempPath, this.filePath);
   }
 
   async getPlayers(): Promise<Player[]> {

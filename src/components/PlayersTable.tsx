@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlayerStats } from '@/lib/types';
 import { addPlayerAction } from '@/lib/actions';
@@ -27,25 +27,31 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
     }
   };
 
-  // Filter players by name
-  const filteredStats = initialStats.filter(player =>
-    player.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter players by name (memoized)
+  const filteredStats = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return initialStats;
+    return initialStats.filter(player =>
+      player.name.toLowerCase().includes(term)
+    );
+  }, [initialStats, searchTerm]);
 
-  // Sort players
-  const sortedStats = [...filteredStats].sort((a, b) => {
-    let aVal: any = a[sortField];
-    let bVal: any = b[sortField];
+  // Sort players (memoized)
+  const sortedStats = useMemo(() => {
+    return [...filteredStats].sort((a, b) => {
+      const aVal = a[sortField];
+      const bVal = b[sortField];
 
-    if (sortField === 'name') {
-      return sortOrder === 'asc'
-        ? aVal.localeCompare(bVal)
-        : bVal.localeCompare(aVal);
-    }
+      if (sortField === 'name') {
+        return sortOrder === 'asc'
+          ? (aVal as string).localeCompare(bVal as string)
+          : (bVal as string).localeCompare(aVal as string);
+      }
 
-    // Numbers sort
-    return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
-  });
+      // Numbers sort
+      return sortOrder === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+    });
+  }, [filteredStats, sortField, sortOrder]);
 
   // Add player modal states
   const [showAddModal, setShowAddModal] = useState(false);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 
 interface EloHistoryPoint {
   label: string;
@@ -31,15 +31,14 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
   const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  if (!eloHistory || eloHistory.length === 0 || playerNames.length === 0) {
-    return null;
-  }
-
   // Map players to deterministic colors
-  const playerColors: Record<string, string> = {};
-  playerNames.forEach((name, i) => {
-    playerColors[name] = PALETTE[i % PALETTE.length];
-  });
+  const playerColors = useMemo(() => {
+    const colors: Record<string, string> = {};
+    playerNames.forEach((name, i) => {
+      colors[name] = PALETTE[i % PALETTE.length];
+    });
+    return colors;
+  }, [playerNames]);
 
   // Toggle player visibility on legend click
   const togglePlayer = (name: string) => {
@@ -68,46 +67,52 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
   const chartWidth = width - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
 
-  // Calculate ELO bounds dynamically based on active players
-  let minElo = 1200;
-  let maxElo = 1200;
-  let hasActiveRatings = false;
+  // Memoize ELO bounds & scale calculations
+  const { minElo, maxElo, yTicks } = useMemo(() => {
+    let min = 1200;
+    let max = 1200;
+    let hasActiveRatings = false;
 
-  eloHistory.forEach(point => {
-    Object.entries(point.ratings).forEach(([name, rating]) => {
-      if (!hiddenPlayers.has(name)) {
-        if (!hasActiveRatings) {
-          minElo = rating;
-          maxElo = rating;
-          hasActiveRatings = true;
-        } else {
-          if (rating < minElo) minElo = rating;
-          if (rating > maxElo) maxElo = rating;
-        }
-      }
-    });
-  });
+    if (eloHistory && eloHistory.length > 0) {
+      eloHistory.forEach(point => {
+        Object.entries(point.ratings).forEach(([name, rating]) => {
+          if (!hiddenPlayers.has(name)) {
+            if (!hasActiveRatings) {
+              min = rating;
+              max = rating;
+              hasActiveRatings = true;
+            } else {
+              if (rating < min) min = rating;
+              if (rating > max) max = rating;
+            }
+          }
+        });
+      });
+    }
 
-  // Buffer ELO bounds
-  minElo = Math.max(0, minElo - 40);
-  maxElo = maxElo + 40;
+    // Buffer ELO bounds
+    min = Math.max(0, min - 40);
+    max = max + 40;
 
-  // Prevent same min/max
-  if (minElo === maxElo) {
-    minElo -= 100;
-    maxElo += 100;
-  }
+    // Prevent same min/max
+    if (min === max) {
+      min -= 100;
+      max += 100;
+    }
 
-  // Round min/max bounds to nice intervals
-  minElo = Math.floor(minElo / 50) * 50;
-  maxElo = Math.ceil(maxElo / 50) * 50;
+    // Round min/max bounds to nice intervals
+    min = Math.floor(min / 50) * 50;
+    max = Math.ceil(max / 50) * 50;
 
-  // Generate Y-axis grid values
-  const yTicks: number[] = [];
-  const tickStep = (maxElo - minElo) > 300 ? 100 : 50;
-  for (let val = minElo; val <= maxElo; val += tickStep) {
-    yTicks.push(val);
-  }
+    // Generate Y-axis grid values
+    const ticks: number[] = [];
+    const tickStep = (max - min) > 300 ? 100 : 50;
+    for (let val = min; val <= max; val += tickStep) {
+      ticks.push(val);
+    }
+
+    return { minElo: min, maxElo: max, yTicks: ticks };
+  }, [eloHistory, hiddenPlayers]);
 
   // Scale functions
   const getX = (index: number) => {
@@ -120,6 +125,10 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
   const getY = (elo: number) => {
     return paddingTop + chartHeight - ((elo - minElo) / (maxElo - minElo)) * chartHeight;
   };
+
+  if (!eloHistory || eloHistory.length === 0 || playerNames.length === 0) {
+    return null;
+  }
 
   // Mouse move handler for hover tooltips
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {

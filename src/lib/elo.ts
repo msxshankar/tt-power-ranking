@@ -145,6 +145,9 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     ratings: startSnapshot,
   });
 
+  // Map player IDs to entities for O(1) lookups
+  const playerMap = new Map<string, Player>(players.map(p => [p.id, p]));
+
   for (const match of sortedMatches) {
     const p1 = statsMap[match.player1_id];
     const p2 = statsMap[match.player2_id];
@@ -170,8 +173,8 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     p2.elo = Math.round(r2 + K * (s2 - e2));
 
     // Update wins & losses based on individual game scores
+    const isGame11 = match.match_type === '11';
     for (const [s1, s2] of match.game_scores) {
-      const isGame11 = match.match_type === '11';
       if (s1 > s2) {
         // Player 1 won this game
         if (isGame11) {
@@ -200,7 +203,8 @@ export function calculateRankings(players: Player[], matches: Match[]): {
 
     // Record ELO snapshot for history
     const snapshot: Record<string, number> = {};
-    for (const player of players) {
+    for (let i = 0; i < players.length; i++) {
+      const player = players[i];
       snapshot[player.name] = statsMap[player.id]?.elo ?? 1200;
     }
     eloHistory.push({
@@ -220,12 +224,12 @@ export function calculateRankings(players: Player[], matches: Match[]): {
   // Top 5 players (or all players if less than 5) who have played at least one match
   const top5 = sortedPlayers.filter(p => (p.totalWins + p.totalLosses) > 0).slice(0, 5);
 
-  // Last 5 recent matches, mapped with player names and game totals
+  // Last 5 recent matches, mapped with player names and game totals using O(1) Map lookups
   const recentRaw = sortedMatches.slice(-5).reverse();
   const recentMatches = recentRaw.map(m => {
-    const p1 = players.find(p => p.id === m.player1_id);
-    const p2 = players.find(p => p.id === m.player2_id);
-    const winner = players.find(p => p.id === m.winner_id);
+    const p1 = playerMap.get(m.player1_id);
+    const p2 = playerMap.get(m.player2_id);
+    const winner = playerMap.get(m.winner_id);
 
     let p1Games = 0;
     let p2Games = 0;
