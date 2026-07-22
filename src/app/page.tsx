@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
-import { calculateRankings, formatDate } from '@/lib/elo';
+import { calculateRankings } from '@/lib/elo';
 import AddMatchSection from '@/components/AddMatchSection';
 import PlayersTable from '@/components/PlayersTable';
 import ThemeToggle from '@/components/ThemeToggle';
 import RankingHistoryChart from '@/components/RankingHistoryChart';
+import RecentMatchesSection from '@/components/RecentMatchesSection';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,7 @@ export default async function Home() {
   const matches = await db.getMatches();
 
   // Run ELO ranking calculations
-  const { playerStats, top5, recentMatches, eloHistory } = calculateRankings(players, matches);
+  const { playerStats, top5, eloHistory } = calculateRankings(players, matches);
 
   return (
     <main className="container">
@@ -99,56 +100,7 @@ export default async function Home() {
 
         {/* Recent Matches */}
         <section>
-          <div className="glass-panel glass-card" style={{ height: '100%' }}>
-            <h2 className="card-title">
-              🕒 Last 5 Recent Matches
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
-                Live Log
-              </span>
-            </h2>
-            {recentMatches.length === 0 ? (
-              <div className="empty-state">
-                No matches have been played yet.
-              </div>
-            ) : (
-              <div className="matches-list">
-                {recentMatches.map((match) => (
-                  <div key={match.id} className="match-item">
-                    <div className="match-header">
-                      <span>Match #{match.id} &bull; {formatDate(match.created_at)}</span>
-                      <span style={{
-                        background: 'var(--input-bg)',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        fontSize: '11px'
-                      }}>
-                        Rules: {match.match_type} pts
-                      </span>
-                    </div>
-                    <div className="match-details">
-                      <div className={`match-player p1 ${match.winner_id === match.player1_id ? 'winner' : ''}`}>
-                        {match.player1_name} {match.winner_id === match.player1_id && '🏆'}
-                      </div>
-                      <span className="match-versus">vs</span>
-                      <div className={`match-player p2 ${match.winner_id === match.player2_id ? 'winner' : ''}`}>
-                        {match.winner_id === match.player2_id && '🏆'} {match.player2_name}
-                      </div>
-                    </div>
-                    <div className="match-scores-summary">
-                      {match.game_scores.map(([s1, s2], idx) => {
-                        const isS1Win = s1 > s2;
-                        return (
-                          <span key={idx} className={`match-score-badge ${isS1Win ? 'win' : 'loss'}`}>
-                            {s1}:{s2}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <RecentMatchesSection matches={matches} players={players} />
         </section>
       </div>
 
