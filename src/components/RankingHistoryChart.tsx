@@ -130,18 +130,17 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
     return null;
   }
 
-  // Mouse move handler for hover tooltips
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+  // Helper to calculate nearest point from relative cursor or touch coordinates
+  const updateHoverFromCoords = (clientXRaw: number, clientYRaw: number) => {
     if (!containerRef.current) return;
 
     const rect = containerRef.current.getBoundingClientRect();
-    const clientX = e.clientX - rect.left;
-    const clientY = e.clientY - rect.top;
+    const clientX = clientXRaw - rect.left;
+    const clientY = clientYRaw - rect.top;
 
     // Calculate nearest history point on X axis
     const svgX = (clientX / rect.width) * width;
     
-    // Find closest index
     let closestIndex = 0;
     let closestDistance = Infinity;
 
@@ -156,10 +155,21 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
 
     setHoveredPointIndex(closestIndex);
     
-    // Position tooltip near the cursor but bound inside container
+    // Position tooltip near cursor/finger bounded inside container
     const tooltipX = clientX + 15 + 180 > rect.width ? clientX - 195 : clientX + 15;
     const tooltipY = clientY - 80 < 0 ? 15 : clientY - 80;
-    setTooltipPos({ x: tooltipX, y: tooltipY });
+    setTooltipPos({ x: Math.max(5, tooltipX), y: tooltipY });
+  };
+
+  // Mouse & Touch event handlers
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    updateHoverFromCoords(e.clientX, e.clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (e.touches && e.touches[0]) {
+      updateHoverFromCoords(e.touches[0].clientX, e.touches[0].clientY);
+    }
   };
 
   const handleMouseLeave = () => {
@@ -224,9 +234,12 @@ export default function RankingHistoryChart({ eloHistory, playerNames }: Ranking
           viewBox={`0 0 ${width} ${height}`}
           width="100%"
           height="100%"
-          style={{ overflow: 'visible', cursor: 'crosshair' }}
+          style={{ overflow: 'visible', cursor: 'crosshair', touchAction: 'none' }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchMove}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleMouseLeave}
         >
           <defs>
             {/* Soft glows for ELO lines */}

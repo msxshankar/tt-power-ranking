@@ -981,10 +981,20 @@ a {
     min-width: 0;
   }
 
-  /* Make form elements and buttons a bit more compact on mobile */
+  /* Make form elements and buttons easy to tap on touchscreens (44px min touch target) */
   .form-input, .form-select, .btn {
     padding: 10px 14px;
     font-size: 14px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .table-wrapper {
+    margin-top: 8px;
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    -webkit-overflow-scrolling: touch;
   }
 
   .game-score-row {
@@ -996,7 +1006,7 @@ a {
   }
 
   .recent-matches-view-all {
-    min-height: 38px;
+    min-height: 44px;
   }
 
   .match-history-backdrop {
