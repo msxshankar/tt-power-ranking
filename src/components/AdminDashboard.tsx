@@ -195,11 +195,15 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     if (!editingMatch) return;
     setMatchActionError('');
 
-    // Validate scores
+    // Ignore unused score rows, but require both scores whenever a row is started.
+    const completedGames: (number | '')[][] = [];
     let p1Wins = 0;
     let p2Wins = 0;
     for (let i = 0; i < editedGames.length; i++) {
       const [s1, s2] = editedGames[i];
+      if (s1 === '' && s2 === '') {
+        continue;
+      }
       if (s1 === '' || s2 === '') {
         setMatchActionError(`Please enter both scores for Game ${i + 1}.`);
         return;
@@ -210,6 +214,12 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
       }
       if ((s1 as number) > (s2 as number)) p1Wins++;
       else p2Wins++;
+      completedGames.push([s1, s2]);
+    }
+
+    if (completedGames.length === 0) {
+      setMatchActionError('Please enter scores for at least one game.');
+      return;
     }
 
     if (p1Wins === p2Wins) {
@@ -233,13 +243,13 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     );
     const dateIsoString = dateObj.toISOString();
 
-    const result = await updateMatchScoreAction(editingMatch.id, editedGames as [number, number][], dateIsoString);
+    const result = await updateMatchScoreAction(editingMatch.id, completedGames as [number, number][], dateIsoString);
     setIsSavingMatch(false);
 
     if (result.success) {
       setLocalMatches(prev => prev.map(m => m.id === editingMatch.id ? {
         ...m,
-        game_scores: editedGames as [number, number][],
+        game_scores: completedGames as [number, number][],
         winner_id: p1Wins > p2Wins ? m.player1_id : m.player2_id,
         created_at: dateIsoString
       } : m));
@@ -663,7 +673,6 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                           onFocus={(e) => e.target.select()}
                           className="form-input"
                           style={{ width: '60px' }}
-                          required
                         />
                         <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>:</span>
                         <input
@@ -674,7 +683,6 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                           onFocus={(e) => e.target.select()}
                           className="form-input"
                           style={{ width: '60px' }}
-                          required
                         />
                       </div>
                       <button

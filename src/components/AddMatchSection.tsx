@@ -72,11 +72,15 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
       return;
     }
 
-    // Validate scores
+    // Ignore unused score rows, but require both scores whenever a row is started.
+    const completedGames: (number | '')[][] = [];
     let player1Wins = 0;
     let player2Wins = 0;
     for (let i = 0; i < games.length; i++) {
       const [s1, s2] = games[i];
+      if (s1 === '' && s2 === '') {
+        continue;
+      }
       if (s1 === '' || s2 === '') {
         setError(`Please enter both scores for Game ${i + 1}.`);
         return;
@@ -87,6 +91,12 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
       }
       if ((s1 as number) > (s2 as number)) player1Wins++;
       else player2Wins++;
+      completedGames.push([s1, s2]);
+    }
+
+    if (completedGames.length === 0) {
+      setError('Please enter scores for at least one game.');
+      return;
     }
 
     if (player1Wins === player2Wins) {
@@ -106,7 +116,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
       now.getSeconds(),
       now.getMilliseconds()
     );
-    const result = await addMatchAction(player1Id, player2Id, matchType, games as [number, number][], dateObj.toISOString());
+    const result = await addMatchAction(player1Id, player2Id, matchType, completedGames as [number, number][], dateObj.toISOString());
     setIsSubmitting(false);
 
     if (result.success) {
@@ -300,7 +310,6 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
                     onFocus={(e) => e.target.select()}
                     className="form-input"
                     style={{ width: '48px', padding: '6px', fontSize: '14px' }}
-                    required
                   />
                   <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>:</span>
                   <input
@@ -311,7 +320,6 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
                     onFocus={(e) => e.target.select()}
                     className="form-input"
                     style={{ width: '48px', padding: '6px', fontSize: '14px' }}
-                    required
                   />
                 </div>
                 <button
