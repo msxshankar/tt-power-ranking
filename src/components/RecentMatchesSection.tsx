@@ -100,9 +100,27 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
     setResultFilter(playerId === 'all' ? 'win' : 'all');
   };
 
-  const renderMatch = (match: Match) => {
-    const player1Name = playerNames[match.player1_id] || 'Deleted Player';
-    const player2Name = playerNames[match.player2_id] || 'Deleted Player';
+  const renderMatch = (match: Match, preferredLeftPlayerId: string = 'all') => {
+    const isPlayerFilterActive = preferredLeftPlayerId !== 'all';
+
+    let leftPlayerId: string;
+    let rightPlayerId: string;
+
+    if (isPlayerFilterActive) {
+      leftPlayerId = preferredLeftPlayerId;
+      rightPlayerId = match.player1_id === preferredLeftPlayerId ? match.player2_id : match.player1_id;
+    } else {
+      leftPlayerId = match.winner_id;
+      rightPlayerId = match.player1_id === match.winner_id ? match.player2_id : match.player1_id;
+    }
+
+    const leftPlayerName = playerNames[leftPlayerId] || 'Deleted Player';
+    const rightPlayerName = playerNames[rightPlayerId] || 'Deleted Player';
+
+    const isLeftWinner = match.winner_id === leftPlayerId;
+    const isRightWinner = match.winner_id === rightPlayerId;
+
+    const matchColorClass = isLeftWinner ? 'win' : 'loss';
 
     return (
       <div key={match.id} className="match-item">
@@ -111,20 +129,29 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
           <span className="match-rules">Rules: {match.match_type} pts</span>
         </div>
         <div className="match-details">
-          <div className={`match-player p1 ${match.winner_id === match.player1_id ? 'winner' : ''}`}>
-            {player1Name} {match.winner_id === match.player1_id && '🏆'}
+          <div className={`match-player p1 ${isLeftWinner ? 'winner' : ''}`}>
+            {leftPlayerName} {isLeftWinner && '🏆'}
           </div>
           <span className="match-versus">vs</span>
-          <div className={`match-player p2 ${match.winner_id === match.player2_id ? 'winner' : ''}`}>
-            {match.winner_id === match.player2_id && '🏆'} {player2Name}
+          <div className={`match-player p2 ${isRightWinner ? 'winner' : ''}`}>
+            {isRightWinner && '🏆'} {rightPlayerName}
           </div>
         </div>
         <div className="match-scores-summary">
-          {match.game_scores.map(([player1Score, player2Score], index) => (
-            <span key={index} className={`match-score-badge ${player1Score > player2Score ? 'win' : 'loss'}`}>
-              {player1Score}:{player2Score}
-            </span>
-          ))}
+          {match.game_scores.map(([s1, s2], index) => {
+            const leftScore = match.player1_id === leftPlayerId ? s1 : s2;
+            const rightScore = match.player1_id === leftPlayerId ? s2 : s1;
+
+            const badgeClass = isPlayerFilterActive
+              ? matchColorClass
+              : (leftScore > rightScore ? 'win' : 'loss');
+
+            return (
+              <span key={index} className={`match-score-badge ${badgeClass}`}>
+                {leftScore}:{rightScore}
+              </span>
+            );
+          })}
         </div>
       </div>
     );
@@ -150,7 +177,7 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
         {recentMatches.length === 0 ? (
           <div className="empty-state">No matches have been played yet.</div>
         ) : (
-          <div className="matches-list">{recentMatches.map(renderMatch)}</div>
+          <div className="matches-list">{recentMatches.map(match => renderMatch(match, 'all'))}</div>
         )}
       </div>
 
@@ -222,7 +249,7 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
               {filteredMatches.length === 0 ? (
                 <div className="empty-state">No matches match those filters.</div>
               ) : (
-                filteredMatches.map(renderMatch)
+                filteredMatches.map(match => renderMatch(match, playerFilter))
               )}
             </div>
           </section>
