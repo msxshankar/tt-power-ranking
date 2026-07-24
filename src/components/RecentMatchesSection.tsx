@@ -120,8 +120,6 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
     const isLeftWinner = match.winner_id === leftPlayerId;
     const isRightWinner = match.winner_id === rightPlayerId;
 
-    const matchColorClass = isLeftWinner ? 'win' : 'loss';
-
     return (
       <div key={match.id} className="match-item">
         <div className="match-header">
@@ -142,9 +140,7 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
             const leftScore = match.player1_id === leftPlayerId ? s1 : s2;
             const rightScore = match.player1_id === leftPlayerId ? s2 : s1;
 
-            const badgeClass = isPlayerFilterActive
-              ? matchColorClass
-              : (leftScore > rightScore ? 'win' : 'loss');
+            const badgeClass = leftScore > rightScore ? 'win' : 'loss';
 
             return (
               <span key={index} className={`match-score-badge ${badgeClass}`}>
