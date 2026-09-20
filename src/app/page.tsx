@@ -6,6 +6,7 @@ import PlayersTable from '@/components/PlayersTable';
 import ThemeToggle from '@/components/ThemeToggle';
 import RankingHistoryChart from '@/components/RankingHistoryChart';
 import RecentMatchesSection from '@/components/RecentMatchesSection';
+import HeaderLogo from '@/components/HeaderLogo';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,15 +22,7 @@ export default async function Home() {
     <main className="container">
       {/* Header Panel */}
       <header className="glass-panel header">
-        <div className="logo-section">
-          <div className="logo-icon">🏓</div>
-          <div>
-            <h1 className="logo-text">TT Power Ranker</h1>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              Table Tennis Power Ranking
-            </p>
-          </div>
-        </div>
+        <HeaderLogo />
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <ThemeToggle />
           <Link
