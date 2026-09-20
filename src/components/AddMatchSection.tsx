@@ -124,11 +124,7 @@ export default function AddMatchSection({ players: initialPlayers }: AddMatchSec
       // Reset form
       setPlayer1Id('');
       setPlayer2Id('');
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, '0');
-      const d = String(today.getDate()).padStart(2, '0');
-      setMatchDate(`${y}-${m}-${d}`);
+      // Keep selected matchDate so entering multiple matches in the same session doesn't reset the date
       setGames([
         ['', ''],
         ['', ''],

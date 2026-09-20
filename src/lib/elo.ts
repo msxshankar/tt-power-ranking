@@ -155,27 +155,25 @@ export function calculateRankings(players: Player[], matches: Match[]): {
     // If any player in the match has been deleted, skip stat aggregation for this match
     if (!p1 || !p2) continue;
 
-    const isP1Winner = match.winner_id === match.player1_id;
-
-    // Calculate ELO update
-    const r1 = p1.elo;
-    const r2 = p2.elo;
-    
-    // Expected score
-    const e1 = 1 / (1 + Math.pow(10, (r2 - r1) / 400));
-    const e2 = 1 / (1 + Math.pow(10, (r1 - r2) / 400));
-    
-    const s1 = isP1Winner ? 1 : 0;
-    const s2 = isP1Winner ? 0 : 1;
-    
-    const K = 32;
-    p1.elo = Math.round(r1 + K * (s1 - e1));
-    p2.elo = Math.round(r2 + K * (s2 - e2));
-
-    // Update wins & losses based on individual game scores
+    // Update ELO and wins & losses per individual game score
     const isGame11 = match.match_type === '11';
     for (const [s1, s2] of match.game_scores) {
-      if (s1 > s2) {
+      const r1 = p1.elo;
+      const r2 = p2.elo;
+
+      // Expected score for this game
+      const e1 = 1 / (1 + Math.pow(10, (r2 - r1) / 400));
+      const e2 = 1 / (1 + Math.pow(10, (r1 - r2) / 400));
+
+      const s1Win = s1 > s2;
+      const outcome1 = s1Win ? 1 : 0;
+      const outcome2 = s1Win ? 0 : 1;
+
+      const K = 32;
+      p1.elo = Math.round(r1 + K * (outcome1 - e1));
+      p2.elo = Math.round(r2 + K * (outcome2 - e2));
+
+      if (s1Win) {
         // Player 1 won this game
         if (isGame11) {
           p1.wins11++;
