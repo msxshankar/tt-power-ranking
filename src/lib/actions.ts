@@ -182,3 +182,44 @@ export async function updateMatchScoreAction(id: number, gameScores: [number, nu
     return { success: false, error: e.message || 'Failed to update match score.' };
   }
 }
+
+// 7. Append game(s) to an existing session
+export async function appendGameToSessionAction(
+  matchId: number,
+  newGames: [number, number][]
+) {
+  try {
+    if (!matchId) {
+      return { success: false, error: 'Match ID is required.' };
+    }
+    if (!newGames || newGames.length === 0) {
+      return { success: false, error: 'At least one game score is required.' };
+    }
+
+    const matches = await db.getMatches();
+    const match = matches.find(m => m.id === matchId);
+    if (!match) {
+      return { success: false, error: 'Session not found.' };
+    }
+
+    const combinedScores: [number, number][] = [...match.game_scores, ...newGames];
+    const validation = validateMatchScores(combinedScores, match.match_type);
+    if (!validation.isValid) {
+      return { success: false, error: validation.error || 'Invalid scores entered.' };
+    }
+
+    const winnerId = validation.winnerIndex === 0 ? match.player1_id : match.player2_id;
+    await db.updateMatchScore(matchId, combinedScores, winnerId);
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (err) {
+      console.warn('Revalidation error in appendGameToSessionAction:', err);
+    }
+    return { success: true, matchId, combinedScores };
+  } catch (e: any) {
+    console.error('Error in appendGameToSessionAction:', e);
+    return { success: false, error: e.message || 'Failed to append game to session.' };
+  }
+}

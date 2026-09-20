@@ -222,11 +222,6 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
       return;
     }
 
-    if (p1Wins === p2Wins) {
-      setMatchActionError('Matches cannot end in a tie of games.');
-      return;
-    }
-
     setIsSavingMatch(true);
     
     // Combine editedDate with original match time to prevent timezone off-by-one shifts
@@ -247,10 +242,24 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
     setIsSavingMatch(false);
 
     if (result.success) {
+      let resolvedWinnerId = editingMatch.player1_id;
+      if (p1Wins > p2Wins) {
+        resolvedWinnerId = editingMatch.player1_id;
+      } else if (p2Wins > p1Wins) {
+        resolvedWinnerId = editingMatch.player2_id;
+      } else {
+        let p1Pts = 0, p2Pts = 0;
+        for (const [s1, s2] of completedGames) {
+          p1Pts += (s1 as number);
+          p2Pts += (s2 as number);
+        }
+        resolvedWinnerId = p1Pts >= p2Pts ? editingMatch.player1_id : editingMatch.player2_id;
+      }
+
       setLocalMatches(prev => prev.map(m => m.id === editingMatch.id ? {
         ...m,
         game_scores: completedGames as [number, number][],
-        winner_id: p1Wins > p2Wins ? m.player1_id : m.player2_id,
+        winner_id: resolvedWinnerId,
         created_at: dateIsoString
       } : m));
       setEditingMatch(null);

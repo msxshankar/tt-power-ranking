@@ -32,6 +32,7 @@ export function validateMatchScores(gameScores: [number, number][], type: '11' |
   isValid: boolean;
   error?: string;
   winnerIndex?: 0 | 1;
+  isDraw?: boolean;
   player1Games: number;
   player2Games: number;
 } {
@@ -57,9 +58,17 @@ export function validateMatchScores(gameScores: [number, number][], type: '11' |
   }
 
   if (player1Games === player2Games) {
+    // Determine point tie-break to ensure DB constraint compatibility
+    let p1Points = 0;
+    let p2Points = 0;
+    for (const [s1, s2] of gameScores) {
+      p1Points += s1;
+      p2Points += s2;
+    }
     return {
-      isValid: false,
-      error: 'The match cannot end in a draw of games.',
+      isValid: true,
+      isDraw: true,
+      winnerIndex: p1Points >= p2Points ? 0 : 1,
       player1Games,
       player2Games
     };
@@ -67,6 +76,7 @@ export function validateMatchScores(gameScores: [number, number][], type: '11' |
 
   return {
     isValid: true,
+    isDraw: false,
     winnerIndex: player1Games > player2Games ? 0 : 1,
     player1Games,
     player2Games

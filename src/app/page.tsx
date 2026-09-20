@@ -95,7 +95,7 @@ export default async function Home() {
 
         {/* Record Match Section */}
         <section>
-          <AddMatchSection players={players} />
+          <AddMatchSection players={players} matches={matches} />
         </section>
 
         {/* Recent Matches */}

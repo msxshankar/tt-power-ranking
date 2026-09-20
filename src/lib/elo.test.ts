@@ -35,7 +35,8 @@ assert(v2.isValid === true, 'Best of 3 matches won (2-1)');
 assert(v2.winnerIndex === 0, 'Player 1 should be the winner');
 
 const v3 = validateMatchScores([[11, 9], [9, 11]], '11');
-assert(v3.isValid === false, 'Match cannot end in a draw of games');
+assert(v3.isValid === true, 'Draws/ties (1-1) are allowed in sessions');
+assert(v3.isDraw === true, 'isDraw flag should be true for 1-1 session');
 
 const v4 = validateMatchScores([[11, 10]], '11');
 assert(v4.isValid === false, 'Invalid game score makes match invalid');
@@ -246,5 +247,42 @@ const b2 = eqRankings.playerStats.find(p => p.id === 'eq_b2')!;
 assert(a1.elo === a2.elo, `Session winner Elo (${a1.elo}) must equal separate days winner Elo (${a2.elo})`);
 assert(b1.elo === b2.elo, `Session loser Elo (${b1.elo}) must equal separate days loser Elo (${b2.elo})`);
 console.log(`✅ Session equivalence verified: A1 (${a1.elo}) === A2 (${a2.elo}), B1 (${b1.elo}) === B2 (${b2.elo}).\n`);
+
+// 7. Test session appending continuity (saving game 1, then appending game 2 & 3 later)
+console.log('Testing session appending continuity...');
+const appPlayers: Player[] = [
+  { id: 'app_1', name: 'Append 1', created_at: '' },
+  { id: 'app_2', name: 'Append 2', created_at: '' },
+];
+
+// Initial match with game 1
+const initialMatch: Match = {
+  id: 100,
+  player1_id: 'app_1',
+  player2_id: 'app_2',
+  match_type: '21',
+  game_scores: [[21, 15]],
+  winner_id: 'app_1',
+  created_at: '2026-01-01T10:00:00Z',
+};
+
+const initialRankings = calculateRankings(appPlayers, [initialMatch]);
+const app1_initial = initialRankings.playerStats.find(p => p.id === 'app_1')!;
+assert(app1_initial.elo === 1216, 'Game 1 should set Elo to 1216');
+
+// Later: 2 more games are appended to the same session
+const updatedSessionMatch: Match = {
+  ...initialMatch,
+  game_scores: [...initialMatch.game_scores, [18, 21], [21, 14]],
+};
+
+const updatedRankings = calculateRankings(appPlayers, [updatedSessionMatch]);
+const app1_updated = updatedRankings.playerStats.find(p => p.id === 'app_1')!;
+const app2_updated = updatedRankings.playerStats.find(p => p.id === 'app_2')!;
+
+// Verify matches standard 2-1 outcome (1215/1185)
+assert(app1_updated.elo === 1215 && app2_updated.elo === 1185, 'Appended session should reflect all 3 games in correct sequence');
+assert(app1_updated.totalWins === 2 && app1_updated.totalLosses === 1, 'Total record should reflect 2W - 1L');
+console.log('✅ Session appending continuity verified (1216 after G1 -> 1215 after G2 & G3).\n');
 
 console.log('🎉 All core business logic tests completed successfully!');

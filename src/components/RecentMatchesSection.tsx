@@ -106,9 +106,20 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
     let leftPlayerId: string;
     let rightPlayerId: string;
 
+    let p1Games = 0;
+    let p2Games = 0;
+    for (const [s1, s2] of match.game_scores) {
+      if (s1 > s2) p1Games++;
+      else p2Games++;
+    }
+    const isTied = p1Games === p2Games;
+
     if (isPlayerFilterActive) {
       leftPlayerId = preferredLeftPlayerId;
       rightPlayerId = match.player1_id === preferredLeftPlayerId ? match.player2_id : match.player1_id;
+    } else if (isTied) {
+      leftPlayerId = match.player1_id;
+      rightPlayerId = match.player2_id;
     } else {
       leftPlayerId = match.winner_id;
       rightPlayerId = match.player1_id === match.winner_id ? match.player2_id : match.player1_id;
@@ -117,14 +128,16 @@ export default function RecentMatchesSection({ matches, players }: RecentMatches
     const leftPlayerName = playerNames[leftPlayerId] || 'Deleted Player';
     const rightPlayerName = playerNames[rightPlayerId] || 'Deleted Player';
 
-    const isLeftWinner = match.winner_id === leftPlayerId;
-    const isRightWinner = match.winner_id === rightPlayerId;
+    const isLeftWinner = !isTied && match.winner_id === leftPlayerId;
+    const isRightWinner = !isTied && match.winner_id === rightPlayerId;
 
     return (
       <div key={match.id} className="match-item">
         <div className="match-header">
           <span>Match #{match.id} &bull; {formatMatchDateTime(match.created_at)}</span>
-          <span className="match-rules">Rules: {match.match_type} pts</span>
+          <span className="match-rules">
+            {isTied ? `Tied (${p1Games}-${p2Games}) · ` : ''}Rules: {match.match_type} pts
+          </span>
         </div>
         <div className="match-details">
           <div className={`match-player p1 ${isLeftWinner ? 'winner' : ''}`}>
