@@ -181,7 +181,7 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
         </select>
       </label>
 
-      <div className="table-wrapper ranking-desktop-table">
+      <div className="table-wrapper ranking-table-wrapper">
         <table className="table">
           <thead>
             <tr>

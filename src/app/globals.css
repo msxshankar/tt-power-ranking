@@ -1413,12 +1413,16 @@ a {
     flex: 1;
   }
 
-  .ranking-desktop-table {
-    display: none;
+  .ranking-table-wrapper {
+    display: block;
+  }
+
+  .ranking-table-wrapper .table {
+    min-width: 600px;
   }
 
   .ranking-mobile-cards {
-    display: block;
+    display: none;
   }
 
   .admin-desktop-match-table,
