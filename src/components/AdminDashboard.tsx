@@ -326,7 +326,7 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
             Manage players, update match scores, and remove entries
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div className="admin-header-actions">
           <Link href="/" className="btn btn-sm">
             ← Back to Dashboard
           </Link>
@@ -355,7 +355,8 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
           {localMatches.length === 0 ? (
             <div className="empty-state">No matches recorded in the database.</div>
           ) : (
-            <div className="table-wrapper">
+            <>
+            <div className="table-wrapper admin-desktop-match-table">
               <table className="table">
                 <thead>
                   <tr>
@@ -449,6 +450,54 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                 </tbody>
               </table>
             </div>
+            <div className="admin-mobile-match-list" role="list" aria-label="Match management">
+              {[...localMatches].reverse().map((match) => (
+                <article className="admin-mobile-record-card" role="listitem" key={match.id}>
+                  <div className="admin-mobile-record-header">
+                    <strong>Match #{match.id}</strong>
+                    <time className="admin-mobile-record-date" dateTime={match.created_at}>
+                      {formatDate(match.created_at)}
+                    </time>
+                  </div>
+                  <p className="admin-mobile-matchup">
+                    <span className={match.winner_id === match.player1_id ? 'winner' : undefined}>
+                      {getPlayerName(match.player1_id)}
+                    </span>
+                    <span aria-hidden="true">vs</span>
+                    <span className={match.winner_id === match.player2_id ? 'winner' : undefined}>
+                      {getPlayerName(match.player2_id)}
+                    </span>
+                  </p>
+                  <p className="admin-mobile-record-meta">Rules: {match.match_type} points</p>
+                  <div className="admin-mobile-score-list" role="list" aria-label="Game scores">
+                    {match.game_scores.map(([s1, s2], index) => (
+                      <span className="admin-mobile-score" role="listitem" key={index}>
+                        Game {index + 1}: {s1}:{s2}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="admin-mobile-record-actions">
+                    <button
+                      type="button"
+                      onClick={() => openEditMatchModal(match)}
+                      className="btn btn-sm"
+                      aria-label={`Edit match ${match.id}`}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingDeleteMatch(match.id)}
+                      className="btn btn-sm btn-danger"
+                      aria-label={`Delete match ${match.id}`}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+            </>
           )}
         </section>
 
@@ -470,7 +519,8 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
           {localPlayers.length === 0 ? (
             <div className="empty-state">No players found in the database.</div>
           ) : (
-            <div className="table-wrapper">
+            <>
+            <div className="table-wrapper admin-desktop-player-table">
               <table className="table">
                 <thead>
                   <tr>
@@ -562,6 +612,93 @@ export default function AdminDashboard({ players, matches }: AdminDashboardProps
                 </tbody>
               </table>
             </div>
+            <div className="admin-mobile-player-list" role="list" aria-label="Player management">
+              {localPlayers.map((player) => {
+                const isEditing = editingPlayerId === player.id;
+                const isDeleting = isDeletingPlayerId === player.id;
+                const isBusy = isDeletingPlayerId !== null || isSavingPlayerName;
+
+                return (
+                  <article
+                    className="admin-mobile-player-card"
+                    role="listitem"
+                    key={player.id}
+                    style={isDeleting ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
+                  >
+                    {isEditing ? (
+                      <form
+                        onSubmit={(event) => handleRenamePlayerSubmit(event, player.id)}
+                        className="admin-mobile-player-form"
+                      >
+                        <input
+                          type="text"
+                          value={editingPlayerName}
+                          onChange={(event) => setEditingPlayerName(event.target.value)}
+                          onKeyDown={handleRenameKeyDown}
+                          className="form-input"
+                          required
+                          disabled={isSavingPlayerName}
+                          placeholder="Enter new name..."
+                          aria-label={`Rename ${player.name}`}
+                        />
+                        <div className="admin-mobile-player-form-actions">
+                          <button
+                            type="submit"
+                            className="btn btn-sm btn-primary"
+                            disabled={isSavingPlayerName}
+                          >
+                            {isSavingPlayerName ? 'Saving...' : 'Save'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPlayerId(null);
+                              setEditingPlayerName('');
+                              setPlayerActionError('');
+                            }}
+                            className="btn btn-sm"
+                            disabled={isSavingPlayerName}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="admin-mobile-player-heading">
+                          <strong className="admin-mobile-player-name">{player.name}</strong>
+                          <div className="admin-mobile-player-actions">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingPlayerId(player.id);
+                                setEditingPlayerName(player.name);
+                                setPlayerActionError('');
+                              }}
+                              className="btn btn-sm"
+                              disabled={isBusy}
+                              aria-label={`Rename ${player.name}`}
+                            >
+                              ✏️ Rename
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmingDeletePlayer({ id: player.id, name: player.name })}
+                              className="btn btn-sm btn-danger"
+                              disabled={isBusy}
+                              aria-label={`Delete ${player.name}`}
+                            >
+                              {isDeleting ? '⏳ Deleting...' : '🗑️ Delete'}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+            </>
           )}
         </section>
       </div>

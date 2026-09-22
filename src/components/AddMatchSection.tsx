@@ -222,7 +222,7 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
   const p2Name = initialPlayers.find(p => p.id === player2Id)?.name || 'Player 2';
 
   return (
-    <div className="glass-panel glass-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="glass-panel glass-card match-entry-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <h2 className="card-title">
         🏓 {activeSession ? `Session #${activeSession.id}` : 'Record Match'}
         <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
@@ -262,7 +262,7 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
         )}
 
         {/* Players Selection */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+        <div className="match-player-selection">
           <div className="form-group">
             <label className="form-label">Player 1</label>
             <select
@@ -322,7 +322,7 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
             padding: '10px 12px',
             marginBottom: '14px'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div className="session-continuity-header">
               <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 ⚡ Existing Session Found
               </span>
@@ -345,7 +345,7 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginBottom: activeSession ? '10px' : '0' }}>
+            <div className="session-mode-controls" style={{ marginBottom: activeSession ? '10px' : '0' }}>
               <button
                 type="button"
                 className="btn btn-sm"
@@ -385,7 +385,7 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
             {/* Existing games in this session */}
             {activeSession && existingScoresOriented.length > 0 && (
               <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '8px', marginTop: '4px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                <div className="session-score-summary">
                   <span>Recorded Games:</span>
                   <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                     {p1Name} ({p1ExistingWins}) - ({p2ExistingWins}) {p2Name}
@@ -417,7 +417,7 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
         {/* Match Type */}
         <div className="form-group" style={{ marginBottom: '16px' }}>
           <label className="form-label">Game Point Rules</label>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="match-rule-options">
             <button
               type="button"
               className="btn"
@@ -466,8 +466,8 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
         </div>
 
         {/* Game Scores Inputs */}
-        <div style={{ marginBottom: '20px', flexGrow: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <div className="game-score-section" style={{ flexGrow: 1 }}>
+          <div className="game-score-section-header">
             <span className="form-label">
               {activeSession ? `Add Games to Session #${activeSession.id}` : 'Game Scores'}
             </span>

@@ -27,6 +27,12 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
     }
   };
 
+  const handleMobileSortChange = (value: string) => {
+    const [field, order] = value.split(':') as [SortField, SortOrder];
+    setSortField(field);
+    setSortOrder(order);
+  };
+
   // Filter players by name (memoized)
   const filteredStats = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -131,29 +137,51 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
 
   return (
     <div className="glass-panel glass-card" style={{ marginTop: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 700 }}>Overall Rankings & stats</h2>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+      <div className="ranking-header">
+        <h2 className="ranking-title">Overall Rankings &amp; stats</h2>
+        <div className="ranking-actions">
           <input
             type="text"
             placeholder="🔍 Search player..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input"
-            style={{ maxWidth: '200px', padding: '10px 12px', fontSize: '14px' }}
+            className="form-input ranking-search-input"
+            aria-label="Search players"
+            style={{ padding: '10px 12px', fontSize: '14px' }}
           />
           <button
             type="button"
-            className="btn btn-sm btn-primary"
+            className="btn btn-sm btn-primary ranking-add-button"
             onClick={() => setShowAddModal(true)}
-            style={{ padding: '10px 16px', fontSize: '14px', whiteSpace: 'nowrap' }}
+            style={{ padding: '10px 16px', fontSize: '14px' }}
           >
             ＋ Add Player
           </button>
         </div>
       </div>
 
-      <div className="table-wrapper">
+      <label className="ranking-mobile-sort">
+        <span>Sort players</span>
+        <select
+          className="form-select"
+          value={`${sortField}:${sortOrder}`}
+          onChange={(event) => handleMobileSortChange(event.target.value)}
+          aria-label="Sort players"
+        >
+          <option value="elo:desc">Highest ELO</option>
+          <option value="elo:asc">Lowest ELO</option>
+          <option value="name:asc">Name A–Z</option>
+          <option value="name:desc">Name Z–A</option>
+          <option value="wins11:desc">Most wins to 11</option>
+          <option value="wins11:asc">Fewest wins to 11</option>
+          <option value="wins21:desc">Most wins to 21</option>
+          <option value="wins21:asc">Fewest wins to 21</option>
+          <option value="totalWins:desc">Most total wins</option>
+          <option value="totalWins:asc">Fewest total wins</option>
+        </select>
+      </label>
+
+      <div className="table-wrapper ranking-desktop-table">
         <table className="table">
           <thead>
             <tr>
@@ -218,6 +246,52 @@ export default function PlayersTable({ initialStats }: PlayersTableProps) {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="ranking-mobile-cards">
+        {sortedStats.length === 0 ? (
+          <div className="empty-state">No players found matching your query.</div>
+        ) : (
+          <div className="ranking-card-list">
+            {sortedStats.map((player, index) => (
+              <article className="ranking-card" key={player.id}>
+                <div className="ranking-card-heading">
+                  <span className="ranking-card-rank">#{index + 1}</span>
+                  <h3 className="ranking-card-name">{player.name}</h3>
+                  <span className="ranking-card-elo" aria-label={`ELO ${player.elo}`}>
+                    {player.elo}
+                  </span>
+                </div>
+                <dl className="ranking-card-stats">
+                  <div className="ranking-card-stat">
+                    <dt>Games to 11</dt>
+                    <dd>
+                      <span className="badge badge-win">{player.wins11} W</span>{' '}
+                      <span aria-hidden="true">–</span>{' '}
+                      <span className="badge badge-loss">{player.losses11} L</span>
+                    </dd>
+                  </div>
+                  <div className="ranking-card-stat">
+                    <dt>Games to 21</dt>
+                    <dd>
+                      <span className="badge badge-win">{player.wins21} W</span>{' '}
+                      <span aria-hidden="true">–</span>{' '}
+                      <span className="badge badge-loss">{player.losses21} L</span>
+                    </dd>
+                  </div>
+                  <div className="ranking-card-stat ranking-card-stat-total">
+                    <dt>Total record</dt>
+                    <dd>
+                      <span className="badge badge-neutral">
+                        {player.totalWins} W - {player.totalLosses} L
+                      </span>
+                    </dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Add Player Modal */}
