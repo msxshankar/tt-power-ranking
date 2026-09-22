@@ -487,27 +487,25 @@ export default function AddMatchSection({ players: initialPlayers, matches = [] 
               return (
                 <div key={index} className="game-score-row" style={{ marginBottom: '6px' }}>
                   <span className="game-score-label">G{gameNumber}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div className="game-score-inputs">
                     <input
                       type="number"
                       min="0"
                       value={game[0]}
                       onChange={(e) => handleScoreChange(index, 0, e.target.value)}
                       onFocus={(e) => e.target.select()}
-                      className="form-input"
+                      className="form-input game-score-input"
                       placeholder={p1Name ? p1Name.slice(0, 3) : 'P1'}
-                      style={{ width: '48px', padding: '6px', fontSize: '14px', textAlign: 'center' }}
                     />
-                    <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>:</span>
+                    <span className="game-score-separator">:</span>
                     <input
                       type="number"
                       min="0"
                       value={game[1]}
                       onChange={(e) => handleScoreChange(index, 1, e.target.value)}
                       onFocus={(e) => e.target.select()}
-                      className="form-input"
+                      className="form-input game-score-input"
                       placeholder={p2Name ? p2Name.slice(0, 3) : 'P2'}
-                      style={{ width: '48px', padding: '6px', fontSize: '14px', textAlign: 'center' }}
                     />
                   </div>
                   <button
