@@ -856,10 +856,15 @@ a {
 .game-score-row .game-score-input {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
   padding: 6px 10px;
   font-size: 16px;
   font-variant-numeric: tabular-nums;
+}
+
+.match-player-selection .form-select,
+.game-score-row .game-score-input {
+  height: 44px;
+  min-height: 44px;
 }
 
 .game-score-separator {
