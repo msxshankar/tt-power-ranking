@@ -64,6 +64,8 @@ export default async function Home() {
               <div className="podium-container">
                 {top5.map((player, index) => {
                   const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+                  const totalGames = player.totalWins + player.totalLosses;
+                  const winRate = (player.totalWins / totalGames) * 100;
                   return (
                     <div key={player.id} className={`podium-item ${rankClass}`}>
                       <div className="podium-rank">
@@ -72,7 +74,7 @@ export default async function Home() {
                       <div className="podium-info">
                         <div className="podium-name">{player.name}</div>
                         <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                          Record: {player.totalWins}W - {player.totalLosses}L
+                          Record: {player.totalWins}W - {player.totalLosses}L · Win rate: {winRate.toFixed(1)}%
                         </div>
                       </div>
                       <div className="podium-elo">
